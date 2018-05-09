@@ -1,4 +1,4 @@
-# duplicacy-utils: Schedule and run duplicacy on Mac OS/X
+# duplicacy-util: Schedule and run duplicacy via CLI
 
 [Duplicacy]: https://github.com/gilbertchen/duplicacy
 
