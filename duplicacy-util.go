@@ -34,6 +34,7 @@ var (
 	debugFlag bool
 	verboseFlag bool
 
+	// Create configuration object to load configuration file
 	configFile *utils.ConfigFile = utils.NewConfigFile()
 )
 
@@ -68,6 +69,7 @@ func main() {
 	if debugFlag { verboseFlag = true }
 
 	// Parse the configuration file and check for errors
+	// (Errors are printed to stderr as well as returned)
 	configFile.SetConfig(cmdFile)
 	if err := configFile.LoadConfig(verboseFlag, debugFlag); err != nil {
 		os.Exit(1)
