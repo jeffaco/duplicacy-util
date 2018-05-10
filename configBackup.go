@@ -17,10 +17,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/spf13/viper"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/viper"
 )
 
 var Filename string
