@@ -22,20 +22,32 @@ import (
 )
 
 var (
+	// Configuration file for backup operations
 	cmdFile   string
+
+	// Binary options for what operations to perform
+	cmdAll bool
 	cmdBackup bool
-	cmdPurge  bool
 	cmdCheck  bool
+	cmdPurge  bool
+
+	debugFlag bool
+	verboseFlag bool
 
 	configFile *utils.ConfigFile = utils.NewConfigFile()
 )
 
 func init() {
 	// Perform command line argument processing
-	flag.StringVar(&cmdFile, "file", "", "configuration file for storage definitions (must be specified)")
-	flag.BoolVar(&cmdBackup, "backup", false, "perform duplicity backup operation")
-	flag.BoolVar(&cmdPurge, "purge", false, "perform duplicity purge operation")
-	flag.BoolVar(&cmdCheck, "check", false, "perform duplicity check operation")
+	flag.StringVar(&cmdFile, "f", "", "Configuration file for storage definitions (must be specified)")
+
+	flag.BoolVar(&cmdAll, "a", false, "Perform all duplicity operations (backup/copy, purge, check)")
+	flag.BoolVar(&cmdBackup, "b", false, "Perform duplicity backup/copy operation")
+	flag.BoolVar(&cmdCheck, "c", false, "Perform duplicity check operation")
+	flag.BoolVar(&cmdPurge, "p", false, "Perform duplicity purge operation")
+
+	flag.BoolVar(&debugFlag, "d", false, "Enable debug output (implies verbose)")
+	flag.BoolVar(&verboseFlag, "v", false, "Enable verbose output")
 }
 
 func main() {
@@ -52,14 +64,12 @@ func main() {
 		os.Exit(2)
 	}
 
-	fmt.Println("Value for file:", cmdFile)
-	fmt.Println("Value for backup:", cmdBackup)
-	fmt.Println("Value for purge:", cmdPurge)
-	fmt.Println("Value for check:", cmdCheck)
+	if cmdAll { cmdBackup, cmdPurge, cmdCheck = true, true, true }
+	if debugFlag { verboseFlag = true }
 
 	// Parse the configuration file and check for errors
 	configFile.SetConfig(cmdFile)
-	if err := configFile.LoadConfig(); err != nil {
+	if err := configFile.LoadConfig(verboseFlag, debugFlag); err != nil {
 		os.Exit(1)
 	}
 
