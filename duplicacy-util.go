@@ -42,10 +42,10 @@ func init() {
 	// Perform command line argument processing
 	flag.StringVar(&cmdFile, "f", "", "Configuration file for storage definitions (must be specified)")
 
-	flag.BoolVar(&cmdAll, "a", false, "Perform all duplicity operations (backup/copy, purge, check)")
-	flag.BoolVar(&cmdBackup, "b", false, "Perform duplicity backup/copy operation")
-	flag.BoolVar(&cmdCheck, "c", false, "Perform duplicity check operation")
-	flag.BoolVar(&cmdPurge, "p", false, "Perform duplicity purge operation")
+	flag.BoolVar(&cmdAll, "a", false, "Perform all duplicacy operations (backup/copy, purge, check)")
+	flag.BoolVar(&cmdBackup, "b", false, "Perform duplicacy backup/copy operation")
+	flag.BoolVar(&cmdCheck, "c", false, "Perform duplicacy check operation")
+	flag.BoolVar(&cmdPurge, "p", false, "Perform duplicacy purge operation")
 
 	flag.BoolVar(&debugFlag, "d", false, "Enable debug output (implies verbose)")
 	flag.BoolVar(&verboseFlag, "v", false, "Enable verbose output")
