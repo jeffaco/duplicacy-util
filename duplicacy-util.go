@@ -18,7 +18,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"duplicacy-util/utils"
 )
 
 var (
@@ -35,7 +34,7 @@ var (
 	verboseFlag bool
 
 	// Create configuration object to load configuration file
-	configFile *utils.ConfigFile = utils.NewConfigFile()
+	configFile *ConfigFile = NewConfigFile()
 )
 
 func init() {
