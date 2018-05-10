@@ -218,48 +218,49 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 		fmt.Fprintln(os.Stderr, "Error:", err)
 	}
 
-	// Generate verbose output if requested
+	// Generate verbose/debug output if requested (assuming no fatal errors)
 
 	if err == nil {
 		fmt.Println("Using config file:  ", v.ConfigFileUsed())
 		fmt.Println("Repository Location:", config.repoDir)
-	}
 
-	if err == nil && verboseFlag {
-		fmt.Println()
-		fmt.Println("Backup Information:")
-		fmt.Printf("  Num\t%-20s%s\n", "Storage", "Threads")
-		for i := range config.backupInfo {
-			fmt.Printf("  %2d\t%-20s   %-2s\n", i+1, config.backupInfo[i]["name"], config.backupInfo[i]["threads"])
-		}
-		if len(config.copyInfo) != 0 {
-			fmt.Println("Copy Information:")
-			fmt.Printf("  Num\t%-20s%-20s%s\n", "From", "To", "Threads")
-			for i := range config.copyInfo {
-				fmt.Printf("  %2d\t%-20s%-20s   %-2s\n", i+1, config.copyInfo[i]["from"], config.copyInfo[i]["to"], config.copyInfo[i]["threads"])
+		if verboseFlag {
+			fmt.Println()
+			fmt.Println("Backup Information:")
+			fmt.Printf("  Num\t%-20s%s\n", "Storage", "Threads")
+			for i := range config.backupInfo {
+				fmt.Printf("  %2d\t%-20s   %-2s\n", i+1, config.backupInfo[i]["name"], config.backupInfo[i]["threads"])
 			}
-		}
-		fmt.Println()
+			if len(config.copyInfo) != 0 {
+				fmt.Println("Copy Information:")
+				fmt.Printf("  Num\t%-20s%-20s%s\n", "From", "To", "Threads")
+				for i := range config.copyInfo {
+					fmt.Printf("  %2d\t%-20s%-20s   %-2s\n", i+1, config.copyInfo[i]["from"], config.copyInfo[i]["to"], config.copyInfo[i]["threads"])
+				}
+			}
+			fmt.Println()
 
-		fmt.Println("Prune Information:")
-		for i := range config.pruneInfo {
-			fmt.Printf("  %2d: Storage %s\n      Keep: %s\n", i+1, config.pruneInfo[i]["storage"], config.pruneInfo[i]["keep"])
-		}
-		fmt.Println()
+			fmt.Println("Prune Information:")
+			for i := range config.pruneInfo {
+				fmt.Printf("  %2d: Storage %s\n      Keep: %s\n", i+1, config.pruneInfo[i]["storage"], config.pruneInfo[i]["keep"])
+			}
+			fmt.Println()
 
-		fmt.Println("Check Information:")
-		fmt.Printf("  Num\t%-20s%s\n", "Storage", "All Snapshots")
-		for i := range config.copyInfo {
-			fmt.Printf("  %2d\t%-20s    %-2s\n", i+1, config.checkInfo[i]["storage"], config.checkInfo[i]["all"])
+			fmt.Println("Check Information:")
+			fmt.Printf("  Num\t%-20s%s\n", "Storage", "All Snapshots")
+			for i := range config.checkInfo {
+				fmt.Printf("  %2d\t%-20s    %-2s\n", i+1, config.checkInfo[i]["storage"], config.checkInfo[i]["all"])
+			}
+			fmt.Println()
 		}
-		fmt.Println()
+
+		if debugFlag {
+			fmt.Println("\nBackup Info:", config.backupInfo)
+			fmt.Println("Copy Info:", config.copyInfo)
+			fmt.Println("Prune Info:", config.pruneInfo)
+			fmt.Println("Check Info", config.checkInfo)
+		}
 	}
 
-	if err == nil && debugFlag {
-		fmt.Println("\nBackup Info:", config.backupInfo)
-		fmt.Println("Copy Info:", config.copyInfo)
-		fmt.Println("Prune Info:", config.pruneInfo)
-		fmt.Println("Check Info", config.checkInfo)
-	}
 	return err
 }
