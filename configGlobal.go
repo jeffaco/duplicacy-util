@@ -3,19 +3,53 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
+	"os/exec"
+	"path/filepath"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
 var (
+	// Location of duplicacy binary
+	duplicacyPath string
+
 	// Directory for lock files
 	globalLockDir string
+
+	// Directory for log files
+	globalLogDir string
 )
 
 // loadGlobalConfig reads in config file and ENV variables if set.
 func loadGlobalConfig(cfgFile string) error {
+	var err error
+
+	// Read in (or set) global environment variables
+	if err = setGlobalConfigVariables(cfgFile); err != nil {
+		return err
+	}
+
+	// Validate global environment variables
+	if _, err = exec.LookPath(duplicacyPath); err != nil {
+		fmt.Fprintln(os.Stderr, "Error", err)
+		return err
+	}
+
+	if err = verifyPathExists(globalLockDir); err != nil {
+		return err
+	}
+
+	os.Mkdir(globalLogDir, 0755)
+	if err = verifyPathExists(globalLogDir); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Read configuration file or set reasonable defaults if none
+func setGlobalConfigVariables(cfgFile string) error {
 	// Find home directory.
 	home, err := homedir.Dir()
 	if err != nil {
@@ -36,7 +70,9 @@ func loadGlobalConfig(cfgFile string) error {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// Set some defaults that we can depend on
-	globalLockDir = path.Join(home, ".duplicacy-util")
+	duplicacyPath = "duplicacy"
+	globalLockDir = filepath.Join(home, ".duplicacy-util")
+	globalLogDir = filepath.Join(home, ".duplicacy-util", "log")
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
@@ -50,14 +86,33 @@ func loadGlobalConfig(cfgFile string) error {
 
 	fmt.Println("Using global config:", viper.ConfigFileUsed())
 
-	configStr := viper.GetString("lockdirectory")
+	var configStr string
+
+	configStr = viper.GetString("duplicacypath")
+	if configStr != "" {
+		duplicacyPath = configStr
+	}
+
+	configStr = viper.GetString("lockdirectory")
 	if configStr != "" {
 		globalLockDir = configStr
 	}
-	if _, err = os.Stat(globalLockDir); err != nil {
+
+	configStr = viper.GetString("logdirectory")
+	if configStr != "" {
+		globalLogDir = configStr
+	}
+
+	return err
+}
+
+func verifyPathExists(path string) error {
+	var err error
+
+	if _, err = os.Stat(path); err != nil {
 		fmt.Fprintln(os.Stderr, "Error: ", err)
 		return err
 	}
 
-	return err
+	return nil
 }

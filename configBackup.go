@@ -63,6 +63,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 
 	// If a config file is found, read it in.
 	if err := v.ReadInConfig(); err != nil {
+		fmt.Fprintln(os.Stderr, "Error: ", err)
 		return err
 	}
 

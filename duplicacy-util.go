@@ -18,8 +18,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/theckman/go-flock"
 )
@@ -85,21 +86,29 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Perform processing. Note that int is returned for two reasons:
+	// 1. We need to know the proper exit code
+	// 2. We want defer statements to execute, so we only use os.Exit here
+
+	os.Exit( obtainLock() )
+}
+
+func obtainLock() int {
 	// Obtain a lock to make sure we don't overlap operations against a configuration
-	lockfile := path.Join(globalLockDir, cmdConfig + ".lock")
+	lockfile := filepath.Join(globalLockDir, cmdConfig + ".lock")
 	fileLock := flock.NewFlock(lockfile)
 
 	locked, err := fileLock.TryLock()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err)
-		os.Exit(101)
+		return 101
 	}
 
 	if ! locked {
 		// do not have exclusive lock
 		err = errors.New("unable to obtain lock using lockfile: " + lockfile)
 		fmt.Fprintln(os.Stderr, "Error:", err)
-		os.Exit(100)
+		return 100
 	}
 
 	// flock doesn't remove the lock file when done, so let's do it ourselves
@@ -109,12 +118,33 @@ func main() {
 
 	// Perform operations (backup or whatever)
 	if err := performBackup(); err != nil {
-		os.Exit(200)
+		return 200
 	}
 
-	os.Exit(0)
+	return 0
 }
 
 func performBackup() error {
+	// Create output log file
+	file, err := os.Create(filepath.Join(globalLogDir, cmdConfig + ".log"))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		return err
+	}
+	logger := log.New(file, "", log.Ltime)
+	logger.Println("Hello from duplicacy-util!")
+
+	//anon := func(s string) { logger.Println(s) }
+
+	// Perform backup/copy operations if requested
+	if cmdBackup {
+		//cmdArgs := []string{"-e", "-o", "pid,args"}
+		//err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
+		if err != nil {
+			fmt.Println("Error executing command:", err)
+			return err
+		}
+	}
+
 	return nil
 }
