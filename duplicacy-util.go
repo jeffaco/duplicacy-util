@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 
 	"github.com/theckman/go-flock"
+	"time"
 )
 
 var (
@@ -62,12 +63,12 @@ func main() {
 	flag.Parse()
 
 	if flag.NArg() != 0 {
-		fmt.Fprintln(os.Stderr, "Unrecognized arguments specified on command line:", flag.Args())
+		fmt.Fprintln(os.Stderr, "Error: Unrecognized arguments specified on command line:", flag.Args())
 		os.Exit(2)
 	}
 
 	if cmdConfig == "" {
-		fmt.Fprintln(os.Stderr, "Mandatory parameter -file is not specified (must be specified)")
+		fmt.Fprintln(os.Stderr, "Error: Mandatory parameter -file is not specified (must be specified)")
 		os.Exit(2)
 	}
 
@@ -86,6 +87,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Everything is loaded; make sure we hae something to do
+	if !cmdBackup && !cmdPurge && !cmdCheck {
+		fmt.Fprintln(os.Stderr, "Error: No operations to perform (specify -b, -p, -c, or -a)")
+		os.Exit(1)
+	}
 	// Perform processing. Note that int is returned for two reasons:
 	// 1. We need to know the proper exit code
 	// 2. We want defer statements to execute, so we only use os.Exit here
@@ -132,19 +138,43 @@ func performBackup() error {
 		return err
 	}
 	logger := log.New(file, "", log.Ltime)
-	logger.Println("Hello from duplicacy-util!")
 
-	//anon := func(s string) { logger.Println(s) }
+	anon := func(s string) { logger.Println(s) }
 
 	// Perform backup/copy operations if requested
 	if cmdBackup {
-		//cmdArgs := []string{"-e", "-o", "pid,args"}
-		//err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
-		if err != nil {
-			fmt.Println("Error executing command:", err)
-			return err
+		for i := range configFile.backupInfo {
+			logger.Println("######################################################################")
+			cmdArgs := []string{"backup", "-storage", configFile.backupInfo[i]["name"], "-threads", configFile.backupInfo[i]["threads"], "-stats"}
+			logger.Println("Backing up to storage", configFile.backupInfo[i]["name"],
+				"with", configFile.backupInfo[i]["threads"], "threads")
+			fmt.Println(time.Now().Format("15:04:05"), "Backing up to storage", configFile.backupInfo[i]["name"],
+				"with", configFile.backupInfo[i]["threads"], "threads")
+			err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error executing command:", err)
+				logger.Println("Error executing command:", err)
+				return err
+			}
+		}
+		if len(configFile.copyInfo) != 0 {
+			for i := range configFile.copyInfo {
+				logger.Println("######################################################################")
+				cmdArgs := []string{"copy", "-threads", configFile.copyInfo[i]["threads"],
+					"-from", configFile.copyInfo[i]["from"], "-to", configFile.copyInfo[i]["to"]}
+				fmt.Println(time.Now().Format("15:04:05"), "Copying from storage", configFile.copyInfo[i]["from"],
+					"to storage", configFile.copyInfo[i]["to"], "with", configFile.copyInfo[i]["threads"], "threads")
+				err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "Error executing command:", err)
+					logger.Println("Error executing command:", err)
+					return err
+				}
+			}
 		}
 	}
+
+	fmt.Println(time.Now().Format("15:04:05"), "Operations completed")
 
 	return nil
 }

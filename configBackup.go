@@ -224,7 +224,6 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 
 	if err == nil {
 		fmt.Println("Using config file:  ", v.ConfigFileUsed())
-		fmt.Println("Repository Location:", config.repoDir)
 
 		if verboseFlag {
 			fmt.Println()
