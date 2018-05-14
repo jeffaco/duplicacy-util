@@ -21,9 +21,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/theckman/go-flock"
-	"time"
 )
 
 var (
@@ -32,10 +33,10 @@ var (
 	cmdGlobalConfig string
 
 	// Binary options for what operations to perform
-	cmdAll bool
+	cmdAll    bool
 	cmdBackup bool
-	cmdCheck bool
-	cmdPurge bool
+	cmdCheck  bool
+	cmdPrune  bool
 
 	debugFlag bool
 	verboseFlag bool
@@ -52,7 +53,7 @@ func init() {
 	flag.BoolVar(&cmdBackup, "b", false, "Perform duplicacy backup/copy operation")
 	flag.BoolVar(&cmdCheck, "c", false, "Perform duplicacy check operation")
 	flag.StringVar(&cmdGlobalConfig, "g", "", "Global configuration file name")
-	flag.BoolVar(&cmdPurge, "p", false, "Perform duplicacy purge operation")
+	flag.BoolVar(&cmdPrune, "p", false, "Perform duplicacy prune operation")
 
 	flag.BoolVar(&debugFlag, "d", false, "Enable debug output (implies verbose)")
 	flag.BoolVar(&verboseFlag, "v", false, "Enable verbose output")
@@ -72,7 +73,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	if cmdAll { cmdBackup, cmdPurge, cmdCheck = true, true, true }
+	if cmdAll { cmdBackup, cmdPrune, cmdCheck = true, true, true }
 	if debugFlag { verboseFlag = true }
 
 	// Parse the global configuration file, if any
@@ -88,7 +89,7 @@ func main() {
 	}
 
 	// Everything is loaded; make sure we hae something to do
-	if !cmdBackup && !cmdPurge && !cmdCheck {
+	if !cmdBackup && !cmdPrune && !cmdCheck {
 		fmt.Fprintln(os.Stderr, "Error: No operations to perform (specify -b, -p, -c, or -a)")
 		os.Exit(1)
 	}
@@ -150,6 +151,7 @@ func performBackup() error {
 				"with", configFile.backupInfo[i]["threads"], "threads")
 			fmt.Println(time.Now().Format("15:04:05"), "Backing up to storage", configFile.backupInfo[i]["name"],
 				"with", configFile.backupInfo[i]["threads"], "threads")
+			if debugFlag { fmt.Println("Executing:", duplicacyPath, cmdArgs) }
 			err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "Error executing command:", err)
@@ -162,14 +164,53 @@ func performBackup() error {
 				logger.Println("######################################################################")
 				cmdArgs := []string{"copy", "-threads", configFile.copyInfo[i]["threads"],
 					"-from", configFile.copyInfo[i]["from"], "-to", configFile.copyInfo[i]["to"]}
+				logger.Println("Copying from storage", configFile.copyInfo[i]["from"],
+					"to storage", configFile.copyInfo[i]["to"], "with", configFile.copyInfo[i]["threads"], "threads")
 				fmt.Println(time.Now().Format("15:04:05"), "Copying from storage", configFile.copyInfo[i]["from"],
 					"to storage", configFile.copyInfo[i]["to"], "with", configFile.copyInfo[i]["threads"], "threads")
+				if debugFlag { fmt.Println("Executing:", duplicacyPath, cmdArgs) }
 				err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
 				if err != nil {
 					fmt.Fprintln(os.Stderr, "Error executing command:", err)
 					logger.Println("Error executing command:", err)
 					return err
 				}
+			}
+		}
+	}
+
+	// Perform prune operations if requested
+	if cmdPrune {
+		for i := range configFile.pruneInfo {
+			logger.Println("######################################################################")
+			cmdArgs := []string{"prune", "-all", "-storage", configFile.pruneInfo[i]["storage"]}
+			cmdArgs = append(cmdArgs, strings.Split(configFile.pruneInfo[i]["keep"], " ")...)
+			logger.Println("Pruning storage", configFile.pruneInfo[i]["storage"])
+			fmt.Println(time.Now().Format("15:04:05"), "Pruning storage", configFile.pruneInfo[i]["storage"])
+			if debugFlag { fmt.Println("Executing:", duplicacyPath, cmdArgs) }
+			err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error executing command:", err)
+				logger.Println("Error executing command:", err)
+				return err
+			}
+		}
+	}
+
+	// Perform check operations if requested
+	if cmdCheck {
+		for i := range configFile.checkInfo {
+			logger.Println("######################################################################")
+			cmdArgs := []string{"check", "-storage", configFile.checkInfo[i]["storage"]}
+			if configFile.checkInfo[i]["all"] == "true" { cmdArgs = append(cmdArgs, "-all") }
+			logger.Println("Checking storage", configFile.pruneInfo[i]["storage"])
+			fmt.Println(time.Now().Format("15:04:05"), "Checking storage", configFile.pruneInfo[i]["storage"])
+			if debugFlag { fmt.Println("Executing:", duplicacyPath, cmdArgs) }
+			err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error executing command:", err)
+				logger.Println("Error executing command:", err)
+				return err
 			}
 		}
 	}
