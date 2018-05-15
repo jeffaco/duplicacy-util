@@ -15,12 +15,15 @@
 package main
 
 import (
+	"compress/gzip"
 	"errors"
+	"io"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -93,6 +96,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Error: No operations to perform (specify -b, -p, -c, or -a)")
 		os.Exit(1)
 	}
+
 	// Perform processing. Note that int is returned for two reasons:
 	// 1. We need to know the proper exit code
 	// 2. We want defer statements to execute, so we only use os.Exit here
@@ -108,14 +112,14 @@ func obtainLock() int {
 	locked, err := fileLock.TryLock()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err)
-		return 101
+		return 201
 	}
 
 	if ! locked {
 		// do not have exclusive lock
 		err = errors.New("unable to obtain lock using lockfile: " + lockfile)
 		fmt.Fprintln(os.Stderr, "Error:", err)
-		return 100
+		return 200
 	}
 
 	// flock doesn't remove the lock file when done, so let's do it ourselves
@@ -125,7 +129,7 @@ func obtainLock() int {
 
 	// Perform operations (backup or whatever)
 	if err := performBackup(); err != nil {
-		return 200
+		return 500
 	}
 
 	return 0
@@ -139,6 +143,19 @@ func performBackup() error {
 		return err
 	}
 	logger := log.New(file, "", log.Ltime)
+
+	logger.Println("Beginning backup on", time.Now().Format("01-02-2006 15:04:05"))
+	fmt.Println(time.Now().Format("15:04:05"), "Beginning backup on", time.Now().Format("01-02-2006 15:04:05"))
+
+	// Handle log file rotation
+
+	logger.Println("Rotating log files")
+	fmt.Println(time.Now().Format("15:04:05"), "Rotating log files")
+
+	if err := rotateLogFiles(); err != nil {
+		return err
+	}
+
 
 	anon := func(s string) { logger.Println(s) }
 
@@ -216,6 +233,48 @@ func performBackup() error {
 	}
 
 	fmt.Println(time.Now().Format("15:04:05"), "Operations completed")
+
+	return nil
+}
+
+func rotateLogFiles() error {
+	logFileRoot := filepath.Join(globalLogDir, cmdConfig) + ".log"
+
+	// Kick the older log files up by a count of one
+	for i := globalLogFileCount - 2; i >= 1; i-- {
+		os.Rename(logFileRoot + "." + strconv.Itoa(i) + ".gz",
+			logFileRoot + "." + strconv.Itoa(i+1) + ".gz")
+	}
+
+	// If uncompressed log file exists, rename it and compress it
+	if _, err := os.Stat(logFileRoot); os.IsNotExist(err) {
+		return nil
+	}
+
+	// Compress <file.log> into <file.log.1.gz>
+	reader, err := os.Open(logFileRoot)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		return err
+	}
+
+	writer, err := os.Create(logFileRoot + ".1.gz")
+	if err != nil {
+		reader.Close()
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		return err
+	}
+	defer writer.Close()
+
+	archiver := gzip.NewWriter(writer)
+	archiver.Name = logFileRoot + ".1.gz"
+	defer archiver.Close()
+
+	if _, err := io.Copy(archiver, reader); err != nil {
+		panic(err)
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		return err
+	}
 
 	return nil
 }

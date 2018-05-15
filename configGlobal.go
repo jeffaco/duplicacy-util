@@ -8,6 +8,7 @@ import (
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -19,6 +20,9 @@ var (
 
 	// Directory for log files
 	globalLogDir string
+
+	// Number of log files to retain
+	globalLogFileCount int
 )
 
 // loadGlobalConfig reads in config file and ENV variables if set.
@@ -32,7 +36,7 @@ func loadGlobalConfig(cfgFile string) error {
 
 	// Validate global environment variables
 	if _, err = exec.LookPath(duplicacyPath); err != nil {
-		fmt.Fprintln(os.Stderr, "Error", err)
+		fmt.Fprintln(os.Stderr, "Error:", err)
 		return err
 	}
 
@@ -43,6 +47,11 @@ func loadGlobalConfig(cfgFile string) error {
 	os.Mkdir(globalLogDir, 0755)
 	if err = verifyPathExists(globalLogDir); err != nil {
 		return err
+	}
+
+	if globalLogFileCount < 2 {
+		err = errors.New("logfilecount must have at least two log files saved")
+		fmt.Fprintln(os.Stderr, "Error:", err)
 	}
 
 	return nil
@@ -73,6 +82,7 @@ func setGlobalConfigVariables(cfgFile string) error {
 	duplicacyPath = "duplicacy"
 	globalLockDir = filepath.Join(home, ".duplicacy-util")
 	globalLogDir = filepath.Join(home, ".duplicacy-util", "log")
+	globalLogFileCount = 5
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
@@ -86,21 +96,20 @@ func setGlobalConfigVariables(cfgFile string) error {
 
 	fmt.Println("Using global config:", viper.ConfigFileUsed())
 
-	var configStr string
-
-	configStr = viper.GetString("duplicacypath")
-	if configStr != "" {
+	if configStr := viper.GetString("duplicacypath"); configStr != "" {
 		duplicacyPath = configStr
 	}
 
-	configStr = viper.GetString("lockdirectory")
-	if configStr != "" {
+	if configStr := viper.GetString("lockdirectory"); configStr != "" {
 		globalLockDir = configStr
 	}
 
-	configStr = viper.GetString("logdirectory")
-	if configStr != "" {
+	if configStr := viper.GetString("logdirectory"); configStr != "" {
 		globalLogDir = configStr
+	}
+
+	if configInt := viper.GetInt("logfilecount"); configInt != 0 {
+		globalLogFileCount = configInt
 	}
 
 	return err
