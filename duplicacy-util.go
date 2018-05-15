@@ -41,6 +41,7 @@ var (
 	cmdCheck  bool
 	cmdPrune  bool
 
+	mailTest bool
 	debugFlag bool
 	verboseFlag bool
 
@@ -57,6 +58,8 @@ func init() {
 	flag.BoolVar(&cmdCheck, "c", false, "Perform duplicacy check operation")
 	flag.StringVar(&cmdGlobalConfig, "g", "", "Global configuration file name")
 	flag.BoolVar(&cmdPrune, "p", false, "Perform duplicacy prune operation")
+
+	flag.BoolVar(&mailTest, "m", false, "Send a test message via E-Mail")
 
 	flag.BoolVar(&debugFlag, "d", false, "Enable debug output (implies verbose)")
 	flag.BoolVar(&verboseFlag, "v", false, "Enable verbose output")
@@ -82,6 +85,12 @@ func main() {
 	// Parse the global configuration file, if any
 	if err := loadGlobalConfig(cmdGlobalConfig); err != nil {
 		os.Exit(2)
+	}
+
+	// Handle request to send E-Mail, if requested
+	if mailTest {
+		sendTestMessage()
+		os.Exit(1)
 	}
 
 	// Parse the configuration file and check for errors
