@@ -145,6 +145,13 @@ func obtainLock() int {
 }
 
 func performBackup() error {
+	// Handle log file rotation (before any output to log file so old one doesn't get trashed)
+
+	fmt.Println(time.Now().Format("15:04:05"), "Rotating log files")
+	if err := rotateLogFiles(); err != nil {
+		return err
+	}
+
 	// Create output log file
 	file, err := os.Create(filepath.Join(globalLogDir, cmdConfig + ".log"))
 	if err != nil {
@@ -157,15 +164,6 @@ func performBackup() error {
 
 	logger.Println("Beginning backup on", time.Now().Format("01-02-2006 15:04:05"))
 	fmt.Println(time.Now().Format("15:04:05"), "Beginning backup on", time.Now().Format("01-02-2006 15:04:05"))
-
-	// Handle log file rotation
-
-	logger.Println("Rotating log files")
-	fmt.Println(time.Now().Format("15:04:05"), "Rotating log files")
-
-	if err := rotateLogFiles(); err != nil {
-		return err
-	}
 
 
 	anon := func(s string) { logger.Println(s) }
