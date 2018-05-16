@@ -153,6 +153,8 @@ func performBackup() error {
 	}
 	logger := log.New(file, "", log.Ltime)
 
+	startTime := time.Now()
+
 	logger.Println("Beginning backup on", time.Now().Format("01-02-2006 15:04:05"))
 	fmt.Println(time.Now().Format("15:04:05"), "Beginning backup on", time.Now().Format("01-02-2006 15:04:05"))
 
@@ -241,7 +243,10 @@ func performBackup() error {
 		}
 	}
 
-	fmt.Println(time.Now().Format("15:04:05"), "Operations completed")
+	endTime := time.Now()
+	elapsedTime := endTime.Sub(startTime)
+
+	fmt.Println(time.Now().Format("15:04:05"), "Operations completed in", elapsedTime)
 
 	return nil
 }
