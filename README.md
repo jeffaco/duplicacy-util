@@ -9,6 +9,7 @@ This repository contains utilities to run [Duplicacy][] on any platform supporte
 Table of contents:
 
 * [What is duplicacy-util?](#what-is-duplicacy-util)
+* [Build Instructions](#build-instructions)
 * [How do you configure duplicacy-util?](#how-do-you-configure-duplicacy-util)
   * [Global configuration file](#global-configuration-file)
   * [Local configuration file](#local-configuration-file)
@@ -56,6 +57,42 @@ duplicacy-util should resume the backup where it left off, even if you back up t
 many different storages.
 * While designed for my usage, I would very much like feedback to see what others would
 like. If a new feature makes sense, I'm happy to add it.
+
+### Build Instructions
+
+Building duplicacy-util from source is easy. First
+[install Go](https://golang.org/doc/install) itself. Once Go is installed
+and `$GOPATH` is set up, run the following commands from the command line
+to get dependencies:
+
+```shell
+go get github.com/mitchellh/go-homedir       
+go get github.com/spf13/viper
+go get github.com/theckman/go-flock
+go get gopkg.in/gomail.v2
+```
+
+Finally, download `duplicacy-util` itself:
+
+```shell
+cd $GOPATH/src
+git clone https://github.com/jeffaco/duplicacy-util.git
+```
+
+Once Go is installed and dependencies are downloaded, to build, do:
+
+```shell
+cd $GOPATH/src/duplicacy-util
+go build
+```
+
+This will generate a `duplicacy-util` binary in the current directory with
+the appropriate file extension for your platform (i.e. `duplicacy-util` for
+Mac OS/X or Linux, or `duplicacy-util.exe` for Windows).
+
+Note that once development of `duplicacy-util` is more complete, I'll post
+binaries for common platforms. See
+[releases on GitHub](https://github.com/jeffaco/duplicacy-util/releases).
 
 ### How do you configure duplicacy-util?
 
