@@ -44,6 +44,11 @@ var (
 	mailTest bool
 	debugFlag bool
 	verboseFlag bool
+	versionFlag bool
+
+	// Version flags (passed by link stage)
+	versiontext string = "<undefined>"
+	githash string     = "<undefined>"
 
 	// Create configuration object to load configuration file
 	configFile *ConfigFile = NewConfigFile()
@@ -63,6 +68,7 @@ func init() {
 
 	flag.BoolVar(&debugFlag, "d", false, "Enable debug output (implies verbose)")
 	flag.BoolVar(&verboseFlag, "v", false, "Enable verbose output")
+	flag.BoolVar(&versionFlag, "version", false, "Display version number")
 }
 
 func main() {
@@ -72,6 +78,12 @@ func main() {
 	if flag.NArg() != 0 {
 		fmt.Fprintln(os.Stderr, "Error: Unrecognized arguments specified on command line:", flag.Args())
 		os.Exit(2)
+	}
+
+	// If version number was requested, show it and exit
+	if versionFlag {
+		fmt.Printf("Version: %s, Git Hash: %s\n", versiontext, githash)
+		os.Exit(0)
 	}
 
 	if cmdConfig == "" {

@@ -20,7 +20,7 @@ Table of contents:
 
 ### What is duplicacy-util?
 
-In short, `duplicacy-util` is a scheduler to run Duplicacy backups. While
+In short, `duplicacy-util` is a utility to run Duplicacy backups. While
 there are a number of
 [other tools](https://github.com/gilbertchen/duplicacy/wiki/Scripts-and-utilities-index)
 available to do similar things, duplicacy-util has a number of advantages:
