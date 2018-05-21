@@ -1,22 +1,24 @@
 package main
 
 import (
+	"strings"
+
 	"gopkg.in/gomail.v2"
 )
 
-func sendTestMessage() {
+func sendTestMessage(subject string, body []string) error {
 	m := gomail.NewMessage()
-	m.SetHeader("From", "alex@example.com")
-	m.SetHeader("To", "bob@example.com", "cora@example.com")
-	m.SetAddressHeader("Cc", "dan@example.com", "Dan")
-	m.SetHeader("Subject", "Hello!")
-	m.SetBody("text/html", "Hello <b>Bob</b> and <i>Cora</i>!")
-	m.Attach("/home/Alex/lolcat.jpg")
+	m.SetHeader("From", emailFromAddress)
+	m.SetHeader("To", emailToAddress)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", strings.Join(body, "\r\n"))
 
-	d := gomail.NewDialer("smtp.example.com", 587, "user", "123456")
+	d := gomail.NewDialer(emailServerHostname, emailServerPort, emailAuthUsername, emailAuthPassword)
 
-	// Send the email to Bob, Cora and Dan.
+	// Send the message
 	if err := d.DialAndSend(m); err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }

@@ -23,6 +23,14 @@ var (
 
 	// Number of log files to retain
 	globalLogFileCount int
+
+	// Fields to support E-Mail
+	emailFromAddress string
+	emailToAddress string
+	emailServerHostname string
+	emailServerPort int
+	emailAuthUsername string
+	emailAuthPassword string
 )
 
 // loadGlobalConfig reads in config file and ENV variables if set.
@@ -94,7 +102,7 @@ func setGlobalConfigVariables(cfgFile string) error {
 		return nil
 	}
 
-	fmt.Println("Using global config:", viper.ConfigFileUsed())
+	logMessage(nil, fmt.Sprint("Using global config: ", viper.ConfigFileUsed()))
 
 	if configStr := viper.GetString("duplicacypath"); configStr != "" {
 		duplicacyPath = configStr
@@ -111,6 +119,14 @@ func setGlobalConfigVariables(cfgFile string) error {
 	if configInt := viper.GetInt("logfilecount"); configInt != 0 {
 		globalLogFileCount = configInt
 	}
+
+	// No form of defaults for E-Mail settings, just read them in
+	emailFromAddress = viper.GetString("emailFromAddress")
+	emailToAddress = viper.GetString("emailToAddress")
+	emailServerHostname = viper.GetString("emailServerHostname")
+	emailServerPort = viper.GetInt("emailServerPort")
+	emailAuthUsername = viper.GetString("emailAuthUsername")
+	emailAuthPassword = viper.GetString("emailAuthPassword")
 
 	return err
 }

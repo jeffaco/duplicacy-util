@@ -131,6 +131,13 @@ duplicacypath | Path for the [Duplicacy] binary program | "duplicacy" on your de
 lockdirectory | Directory where temporary lock files are stored | $HOME/.duplicacy-util
 logdirectory | Directory where log files are stored | $HOME/.duplicacy-util/log
 logfilecount | Number of historical log files that should be stored | 5
+ | |
+emailFromAddress | From address (i.e. from-user@domain.com) | None
+emailToAddress | To address (i.e. to-user@domain.com) | None
+emailServerHostname | SMTP server (i.e. smtp@gmail.com) | None
+emailServerPort | Port of SMTP server (i.e. 465 or 587) | None
+emailAuthUsername | Username for authentication with SMTP server | None
+emailAuthPassword | Password for authentication with SMTP server | None
 
 A sample global configuration file is stored in `~/.duplicacy-util/duplicacy-util.yaml`,
 and contains the following:
@@ -138,6 +145,12 @@ and contains the following:
 ```
 duplicacypath: /Users/Jeff/Applications/duplicacy
 ```
+
+If you want E-Mail capabilities (and you almost certainly do unless
+you're planning on only running `duplicacy-util` interactively), you
+must define prefixes starting with `email` in the list above. For
+E-Mail configuration hints, see
+[Management of E-Mail Messages](#management-of-e-mail-messages).
 
 #### Local configuration file
 
@@ -328,9 +341,14 @@ Usage of ./duplicacy-util:
         Configuration file for storage definitions (must be specified)
   -g string
         Global configuration file name
-  -m    Send a test message via E-Mail
+  -m    Send E-Mail with results of operations (implies quiet)
   -p    Perform duplicacy prune operation
+  -q    Quiet operations (generate output only in case of error)
+  -tm
+        Send a test message via E-Mail
   -v    Enable verbose output
+  -version
+        Display version number
 ```
 
 Exit codes from duplicacy-util are as follows:
@@ -358,4 +376,97 @@ to a folder of your choice.
 
 ### Management of E-Mail Messages
 
-This section will be completed once E-Mail is fully implemented.
+To send E-Mail, you must define a number of fields, and these fields
+depend on what E-Mail server you are using. I use Google's
+[gmail](https://en.wikipedia.org/wiki/Gmail)
+service, and will define my usage here.
+
+**NOTE: This discussion is specific to Gmail, but if you are using a
+different mail server, you can almost certainly use these ideas in your
+specific scenerio.**
+
+Settings in `$HOME/.duplicacy-util/duplicacy-util.yaml`:
+
+Setting | Suggested value
+------- | ---------------
+emailFromAddress | Your Gmail address (i.e. jeff@gmail.com)
+emailToAdress | Your Gmail address (i.e. jeff@gmail.com)
+emailServerHostname | smtp.gmail.com
+emailServerPort | 465
+emailAuthUsername | Your Gmail address (i.e. jeff@gmail.com)
+emailAuthPassword | Your application specific generated password
+
+It is recommended that you use an application specific generated
+password that can be generated in the
+[Gmail Security Center](https://myaccount.google.com/security).
+This works around two-factor authentication or other issues that may
+create problems. Note that the password stored in the global configuration
+file is not encrypted at this time. On a shared system, you should set
+permissions of this file appropriately.
+
+Once you set up the E-Mail configuration appropriately, you can test it
+with a command like: `./duplicacy-util -tm`. This will trigger two E-Mail
+messages to be generated: one "success" message and one "failure" message.
+
+It's recommended that you use Gmail filtering so that failed backups
+are visable in your `inbox` while successful backups are set aside for
+deletion. To do this, first create a folder named `Backup Logs`.
+After the folder is created, then create a filter rule as follows:
+
+```
+Matches: from:(from-user@gmail.com) to:(to-user@taltos.com) subject:(duplicacy-util: Backup results for AND (success))
+Do this: Skip Inbox, Mark as read, Apply label "Backup Logs", Never send it to Spam
+```
+
+After this is done, generate a mail test and verify that you have a
+failed test message in `inbox` and a success test message in `Backup Logs`.
+
+To catch if backups that are not running, and to clean up successful
+backups from folder `Backup Logs`, it is recommended that you create a small
+[Google Apps Script](https://drive.google.com/drive/search?q=type:script)
+to do these actions. In this way, if you do nothing, successful backup
+logs are deleted after 30 days automatically, and failures go to your
+`inbox`, where you can see them and act upon them.
+
+Here is one such
+[Google Apps Script](https://drive.google.com/drive/search?q=type:script)
+named `duplicacy-util.gs`:
+
+```
+function duplicacy_utils() {
+  var threads = GmailApp.search('label:"Backup Logs"');
+  var foundBackup = 0;
+
+  // Backups from duplicacy-util with no errors get filtered to label "Backup Logs" via Gmail
+  // settings. This makes them easy for us to find and iterate over.
+  //
+  // Backups are scheduled at least as often as this script runs. Thus, if nothing was run when this
+  // script runs, then we get active notification that something is wrong with the backup process.
+  //
+  // Naming conventions with duplicacy-util are formatted like:
+  //   "duplicacy-util: Backup results for configuration test (success)" (for successful backups), or
+  //   "duplicacy-util: Backup results for configuration test (FAILURE)" (for failed backups)
+  // Check to see that it start with "duplicacy-util..." and ends with " (Success)", and if so, count
+  // the message.
+
+  for (var i = 0; i < threads.length; i++) {
+    var subject = threads[i].getFirstMessageSubject();
+    if (subject.indexOf('duplicacy-util: Backup results for configuration') == 0 && subject.indexOf(' (success)') != -1)
+    {
+      threads[i].moveToTrash();
+      foundBackup++;
+    }
+  }
+
+  if (foundBackup == 0)
+  {
+    GmailApp.sendEmail('<user>@<domain>.com', 'WARNING: No duplicacy-util backup logs files received', 'Please investigate backup process!');
+  }
+}
+```
+
+**Be certain to replace `<user>` with your Gmail username and `<domain>`
+with your Gmail domain in the script above.**
+
+After the script is set up, you can set up Google to run the script
+automatically on any schedule you wish.

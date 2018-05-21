@@ -63,7 +63,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 
 	// If a config file is found, read it in.
 	if err := v.ReadInConfig(); err != nil {
-		fmt.Fprintln(os.Stderr, "Error: ", err)
+		logError(nil, fmt.Sprint("Error: ", err))
 		return err
 	}
 
@@ -71,10 +71,10 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 	config.repoDir = v.GetString("repository")
 	if config.repoDir == "" {
 		err = errors.New("missing mandatory repository location")
-		fmt.Fprintln(os.Stderr, "Error:", err)
+		logError(nil, fmt.Sprint("Error: ", err))
 	}
 	if _, err = os.Stat(config.repoDir); err != nil {
-		fmt.Fprintln(os.Stderr, "Error: ", err)
+		logError(nil, fmt.Sprint("Error: ", err))
 	}
 
 	// Populate backup information from storages
@@ -88,7 +88,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 					storageMap["name"] = v.GetString(key + ".name")
 				} else {
 					err = errors.New("missing mandatory storage field: " + key + ".name")
-					fmt.Fprintln(os.Stderr, "Error:", err)
+					logError(nil, fmt.Sprint("Error: ", err))
 				}
 				// Default to -threads:1 if not otherwise specified
 				threads := v.GetInt(key + ".threads")
@@ -105,11 +105,11 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 
 		if len(config.backupInfo) == 0 {
 			err = errors.New("no storage locations defined in configuration")
-			fmt.Fprintln(os.Stderr, "Error:", err)
+			logError(nil, fmt.Sprint("Error: ", err))
 		}
 	} else {
 		err = errors.New("no storage locations defined in configuration")
-		fmt.Fprintln(os.Stderr, "Error:", err)
+		logError(nil, fmt.Sprint("Error: ", err))
 	}
 
 	// Populate copy information
@@ -124,7 +124,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 					copyMap["to"] = v.GetString(key + ".to")
 				} else {
 					err = errors.New("missing mandatory storage field: " + key + ".from or " + key + ".to")
-					fmt.Fprintln(os.Stderr, "Error:", err)
+					logError(nil, fmt.Sprint("Error: ", err))
 				}
 				// Default to -threads:1 if not otherwise specified
 				threads := v.GetInt(key + ".threads")
@@ -141,7 +141,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 
 		if len(config.copyInfo) == 0 {
 			err = errors.New("no copy locations defined in configuration")
-			fmt.Fprintln(os.Stderr, "Error:", err)
+			logError(nil, fmt.Sprint("Error: ", err))
 		}
 	}
 
@@ -156,7 +156,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 					pruneMap["storage"] = v.GetString(key + ".storage")
 				} else {
 					err = errors.New("Missing mandatory storage field: " + key + ".storage")
-					fmt.Fprintln(os.Stderr, "Error:", err)
+					logError(nil, fmt.Sprint("Error: ", err))
 				}
 				if v.IsSet(key + ".keep") {
 					// Split/join to get "-keep " before each element
@@ -168,7 +168,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 					pruneMap["keep"] = strings.Join(splitList, " ")
 				} else {
 					err = errors.New("Missing mandatory storage field: " + key + ".keep")
-					fmt.Fprintln(os.Stderr, "Error:", err)
+					logError(nil, fmt.Sprint("Error: ", err))
 				}
 				config.pruneInfo = append(config.pruneInfo, pruneMap)
 			} else {
@@ -178,11 +178,11 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 
 		if len(config.pruneInfo) == 0 {
 			err = errors.New("no prune locations defined in configuration")
-			fmt.Fprintln(os.Stderr, "Error:", err)
+			logError(nil, fmt.Sprint("Error: ", err))
 		}
 	} else {
 		err = errors.New("no prune locations defined in configuration")
-		fmt.Fprintln(os.Stderr, "Error:", err)
+		logError(nil, fmt.Sprint("Error: ", err))
 	}
 
 	// Populate check information
@@ -196,7 +196,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 					checkMap["storage"] = v.GetString(key + ".storage")
 				} else {
 					err = errors.New("missing mandatory storage field: " + key + ".storage")
-					fmt.Fprintln(os.Stderr, "Error:", err)
+					logError(nil, fmt.Sprint("Error: ", err))
 				}
 				// See if all is specified
 				allFlag := v.GetBool(key + ".all")
@@ -213,53 +213,54 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 
 		if len(config.checkInfo) == 0 {
 			err = errors.New("no check locations defined in configuration")
-			fmt.Fprintln(os.Stderr, "Error:", err)
+			logError(nil, fmt.Sprint("Error: ", err))
 		}
 	} else {
 		err = errors.New("no check locations defined in configuration")
-		fmt.Fprintln(os.Stderr, "Error:", err)
+		logError(nil, fmt.Sprint("Error: ", err))
 	}
 
 	// Generate verbose/debug output if requested (assuming no fatal errors)
 
 	if err == nil {
-		fmt.Println("Using config file:  ", v.ConfigFileUsed())
+		logMessage(nil, fmt.Sprint("Using config file:   ", v.ConfigFileUsed()))
 
 		if verboseFlag {
-			fmt.Println()
-			fmt.Println("Backup Information:")
-			fmt.Printf("  Num\t%-20s%s\n", "Storage", "Threads")
+			logMessage(nil, "")
+			logMessage(nil, "Backup Information:")
+			logMessage(nil, fmt.Sprintf("  Num\t%-20s%s", "Storage", "Threads"))
 			for i := range config.backupInfo {
-				fmt.Printf("  %2d\t%-20s   %-2s\n", i+1, config.backupInfo[i]["name"], config.backupInfo[i]["threads"])
+				logMessage(nil, fmt.Sprintf("  %2d\t%-20s   %-2s", i+1, config.backupInfo[i]["name"], config.backupInfo[i]["threads"]))
 			}
 			if len(config.copyInfo) != 0 {
-				fmt.Println("Copy Information:")
-				fmt.Printf("  Num\t%-20s%-20s%s\n", "From", "To", "Threads")
+				logMessage(nil, "Copy Information:")
+				logMessage(nil, fmt.Sprintf("  Num\t%-20s%-20s%s", "From", "To", "Threads"))
 				for i := range config.copyInfo {
-					fmt.Printf("  %2d\t%-20s%-20s   %-2s\n", i+1, config.copyInfo[i]["from"], config.copyInfo[i]["to"], config.copyInfo[i]["threads"])
+					logMessage(nil, fmt.Sprintf("  %2d\t%-20s%-20s   %-2s", i+1, config.copyInfo[i]["from"], config.copyInfo[i]["to"], config.copyInfo[i]["threads"]))
 				}
 			}
-			fmt.Println()
+			logMessage(nil, "")
 
-			fmt.Println("Prune Information:")
+			logMessage(nil, "Prune Information:")
 			for i := range config.pruneInfo {
-				fmt.Printf("  %2d: Storage %s\n      Keep: %s\n", i+1, config.pruneInfo[i]["storage"], config.pruneInfo[i]["keep"])
+				logMessage(nil, fmt.Sprintf("  %2d: Storage %s\n      Keep: %s", i+1, config.pruneInfo[i]["storage"], config.pruneInfo[i]["keep"]))
 			}
-			fmt.Println()
+			logMessage(nil, "")
 
-			fmt.Println("Check Information:")
-			fmt.Printf("  Num\t%-20s%s\n", "Storage", "All Snapshots")
+			logMessage(nil, "Check Information:")
+			logMessage(nil, fmt.Sprintf("  Num\t%-20s%s", "Storage", "All Snapshots"))
 			for i := range config.checkInfo {
-				fmt.Printf("  %2d\t%-20s    %-2s\n", i+1, config.checkInfo[i]["storage"], config.checkInfo[i]["all"])
+				logMessage(nil, fmt.Sprintf("  %2d\t%-20s    %-2s", i+1, config.checkInfo[i]["storage"], config.checkInfo[i]["all"]))
 			}
-			fmt.Println()
+			logMessage(nil, "")
 		}
 
 		if debugFlag {
-			fmt.Println("\nBackup Info:", config.backupInfo)
-			fmt.Println("Copy Info:", config.copyInfo)
-			fmt.Println("Prune Info:", config.pruneInfo)
-			fmt.Println("Check Info", config.checkInfo)
+			logMessage(nil, "")
+			logMessage(nil, fmt.Sprint("Backup Info: ", config.backupInfo))
+			logMessage(nil, fmt.Sprint("Copy Info: ", config.copyInfo))
+			logMessage(nil, fmt.Sprint("Prune Info: ", config.pruneInfo))
+			logMessage(nil, fmt.Sprint("Check Info", config.checkInfo))
 		}
 	}
 

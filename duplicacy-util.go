@@ -41,14 +41,20 @@ var (
 	cmdCheck  bool
 	cmdPrune  bool
 
-	mailTest bool
-	debugFlag bool
+	sendMail	bool
+	testMail    bool
+
+	debugFlag   bool
+	quietFlag   bool
 	verboseFlag bool
 	versionFlag bool
 
 	// Version flags (passed by link stage)
-	versiontext string = "<undefined>"
-	githash string     = "<undefined>"
+	versiontext string = "<dev>"
+	githash string     = "<unknown>"
+
+	// Mail message body to send upon completion
+	mailBody []string
 
 	// Create configuration object to load configuration file
 	configFile *ConfigFile = NewConfigFile()
@@ -64,11 +70,39 @@ func init() {
 	flag.StringVar(&cmdGlobalConfig, "g", "", "Global configuration file name")
 	flag.BoolVar(&cmdPrune, "p", false, "Perform duplicacy prune operation")
 
-	flag.BoolVar(&mailTest, "m", false, "Send a test message via E-Mail")
+	flag.BoolVar(&sendMail, "m", false, "Send E-Mail with results of operations (implies quiet)")
+	flag.BoolVar(&testMail, "tm", false, "Send a test message via E-Mail")
 
 	flag.BoolVar(&debugFlag, "d", false, "Enable debug output (implies verbose)")
+	flag.BoolVar(&quietFlag, "q", false, "Quiet operations (generate output only in case of error)")
 	flag.BoolVar(&verboseFlag, "v", false, "Enable verbose output")
 	flag.BoolVar(&versionFlag, "version", false, "Display version number")
+}
+
+// Generic output routine to generate output to screen (and E-Mail) - Allow output writer
+func logFMessage(w io.Writer, logger *log.Logger, message string) {
+	if logger != nil {
+		logger.Println(message)
+	}
+
+	text := fmt.Sprint(time.Now().Format("15:04:05"), " ", message)
+	mailBody = append(mailBody, text)
+	if w == os.Stdout {
+		fmt.Fprintln(w, text)
+	} else {
+		// Fatal message shouldn't have time prefix
+		fmt.Fprintln(w, message)
+	}
+}
+
+// Generic error output routine to generate output to screen (and E-Mail)
+func logError(logger *log.Logger, message string) {
+	logFMessage(os.Stderr, logger, message)
+}
+
+// Generic output routine to generate output to screen (and E-Mail)
+func logMessage(logger *log.Logger, message string) {
+	logFMessage(os.Stdout, logger, message)
 }
 
 func main() {
@@ -76,7 +110,7 @@ func main() {
 	flag.Parse()
 
 	if flag.NArg() != 0 {
-		fmt.Fprintln(os.Stderr, "Error: Unrecognized arguments specified on command line:", flag.Args())
+		logError(nil, fmt.Sprint("Error: Unrecognized arguments specified on command line: ", flag.Args()))
 		os.Exit(2)
 	}
 
@@ -86,13 +120,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	if cmdConfig == "" {
-		fmt.Fprintln(os.Stderr, "Error: Mandatory parameter -file is not specified (must be specified)")
-		os.Exit(2)
-	}
-
 	if cmdAll { cmdBackup, cmdPrune, cmdCheck = true, true, true }
 	if debugFlag { verboseFlag = true }
+
+	logMessage(nil, fmt.Sprintf("duplicacy-util running, version: %s, Git Hash: %s", versiontext, githash))
 
 	// Parse the global configuration file, if any
 	if err := loadGlobalConfig(cmdGlobalConfig); err != nil {
@@ -100,9 +131,22 @@ func main() {
 	}
 
 	// Handle request to send E-Mail, if requested
-	if mailTest {
-		sendTestMessage()
+	if testMail {
+		if err := sendTestMessage("duplicacy-util: Backup results for configuration test (success)",
+				[]string{"This is a test E-Mail message for a successful backup job"}); err != nil {
+			fmt.Fprintln(os.Stderr, "Error sending succcess E-Mail message:", err)
+		}
+
+		if err := sendTestMessage("duplicacy-util: Backup results for configuration test (FAILURE)",
+			[]string{"This is a test E-Mail message for a failed backup job"}); err != nil {
+			fmt.Fprintln(os.Stderr, "Error sending failed E-Mail message:", err)
+		}
 		os.Exit(1)
+	}
+
+	if cmdConfig == "" {
+		logError(nil, "Error: Mandatory parameter -f is not specified (must be specified)")
+		os.Exit(2)
 	}
 
 	// Parse the configuration file and check for errors
@@ -114,7 +158,7 @@ func main() {
 
 	// Everything is loaded; make sure we hae something to do
 	if !cmdBackup && !cmdPrune && !cmdCheck {
-		fmt.Fprintln(os.Stderr, "Error: No operations to perform (specify -b, -p, -c, or -a)")
+		logError(nil, "Error: No operations to perform (specify -b, -p, -c, or -a)")
 		os.Exit(1)
 	}
 
@@ -132,14 +176,14 @@ func obtainLock() int {
 
 	locked, err := fileLock.TryLock()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error:", err)
+		logError(nil, fmt.Sprint("Error: ", err))
 		return 201
 	}
 
 	if ! locked {
 		// do not have exclusive lock
 		err = errors.New("unable to obtain lock using lockfile: " + lockfile)
-		fmt.Fprintln(os.Stderr, "Error:", err)
+		logError(nil, fmt.Sprint("Error: ", err))
 		return 200
 	}
 
@@ -167,15 +211,14 @@ func performBackup() error {
 	// Create output log file
 	file, err := os.Create(filepath.Join(globalLogDir, cmdConfig + ".log"))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error:", err)
+		logError(nil, fmt.Sprint("Error: ", err))
 		return err
 	}
 	logger := log.New(file, "", log.Ltime)
 
 	startTime := time.Now()
 
-	logger.Println("Beginning backup on", time.Now().Format("01-02-2006 15:04:05"))
-	fmt.Println(time.Now().Format("15:04:05"), "Beginning backup on", time.Now().Format("01-02-2006 15:04:05"))
+	logMessage(logger, fmt.Sprint("Beginning backup on ", time.Now().Format("01-02-2006 15:04:05")))
 
 
 	anon := func(s string) { logger.Println(s) }
@@ -185,15 +228,12 @@ func performBackup() error {
 		for i := range configFile.backupInfo {
 			logger.Println("######################################################################")
 			cmdArgs := []string{"backup", "-storage", configFile.backupInfo[i]["name"], "-threads", configFile.backupInfo[i]["threads"], "-stats"}
-			logger.Println("Backing up to storage", configFile.backupInfo[i]["name"],
-				"with", configFile.backupInfo[i]["threads"], "threads")
-			fmt.Println(time.Now().Format("15:04:05"), "Backing up to storage", configFile.backupInfo[i]["name"],
-				"with", configFile.backupInfo[i]["threads"], "threads")
-			if debugFlag { fmt.Println("Executing:", duplicacyPath, cmdArgs) }
+			logMessage(logger, fmt.Sprint("Backing up to storage ", configFile.backupInfo[i]["name"],
+				" with ", configFile.backupInfo[i]["threads"], " threads"))
+			if debugFlag { logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs)) }
 			err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, "Error executing command:", err)
-				logger.Println("Error executing command:", err)
+				logError(logger, fmt.Sprint( "Error executing command: ", err))
 				return err
 			}
 		}
@@ -202,15 +242,12 @@ func performBackup() error {
 				logger.Println("######################################################################")
 				cmdArgs := []string{"copy", "-threads", configFile.copyInfo[i]["threads"],
 					"-from", configFile.copyInfo[i]["from"], "-to", configFile.copyInfo[i]["to"]}
-				logger.Println("Copying from storage", configFile.copyInfo[i]["from"],
-					"to storage", configFile.copyInfo[i]["to"], "with", configFile.copyInfo[i]["threads"], "threads")
-				fmt.Println(time.Now().Format("15:04:05"), "Copying from storage", configFile.copyInfo[i]["from"],
-					"to storage", configFile.copyInfo[i]["to"], "with", configFile.copyInfo[i]["threads"], "threads")
-				if debugFlag { fmt.Println("Executing:", duplicacyPath, cmdArgs) }
+				logMessage(logger, fmt.Sprint("Copying from storage ", configFile.copyInfo[i]["from"],
+					" to storage ", configFile.copyInfo[i]["to"], " with ", configFile.copyInfo[i]["threads"], " threads"))
+				if debugFlag { logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs)) }
 				err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
 				if err != nil {
-					fmt.Fprintln(os.Stderr, "Error executing command:", err)
-					logger.Println("Error executing command:", err)
+					logError(logger, fmt.Sprint("Error executing command: ", err))
 					return err
 				}
 			}
@@ -223,13 +260,11 @@ func performBackup() error {
 			logger.Println("######################################################################")
 			cmdArgs := []string{"prune", "-all", "-storage", configFile.pruneInfo[i]["storage"]}
 			cmdArgs = append(cmdArgs, strings.Split(configFile.pruneInfo[i]["keep"], " ")...)
-			logger.Println("Pruning storage", configFile.pruneInfo[i]["storage"])
-			fmt.Println(time.Now().Format("15:04:05"), "Pruning storage", configFile.pruneInfo[i]["storage"])
-			if debugFlag { fmt.Println("Executing:", duplicacyPath, cmdArgs) }
+			logMessage(logger, fmt.Sprint("Pruning storage ", configFile.pruneInfo[i]["storage"]))
+			if debugFlag { logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs)) }
 			err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, "Error executing command:", err)
-				logger.Println("Error executing command:", err)
+				logError(logger, fmt.Sprint("Error executing command: ", err))
 				return err
 			}
 		}
@@ -241,13 +276,11 @@ func performBackup() error {
 			logger.Println("######################################################################")
 			cmdArgs := []string{"check", "-storage", configFile.checkInfo[i]["storage"]}
 			if configFile.checkInfo[i]["all"] == "true" { cmdArgs = append(cmdArgs, "-all") }
-			logger.Println("Checking storage", configFile.pruneInfo[i]["storage"])
-			fmt.Println(time.Now().Format("15:04:05"), "Checking storage", configFile.pruneInfo[i]["storage"])
-			if debugFlag { fmt.Println("Executing:", duplicacyPath, cmdArgs) }
+			logMessage(logger, fmt.Sprint("Checking storage ", configFile.pruneInfo[i]["storage"]))
+			if debugFlag { logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs)) }
 			err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, "Error executing command:", err)
-				logger.Println("Error executing command:", err)
+				logError(logger, fmt.Sprint("Error executing command: ", err))
 				return err
 			}
 		}
@@ -256,7 +289,8 @@ func performBackup() error {
 	endTime := time.Now()
 	elapsedTime := endTime.Sub(startTime)
 
-	fmt.Println(time.Now().Format("15:04:05"), "Operations completed in", elapsedTime)
+	logger.Println("######################################################################")
+	logMessage(logger, fmt.Sprint("Operations completed in ", elapsedTime))
 
 	return nil
 }
@@ -278,14 +312,14 @@ func rotateLogFiles() error {
 	// Compress <file.log> into <file.log.1.gz>
 	reader, err := os.Open(logFileRoot)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error:", err)
+		logError(nil, fmt.Sprint("Error: ", err))
 		return err
 	}
 
 	writer, err := os.Create(logFileRoot + ".1.gz")
 	if err != nil {
 		reader.Close()
-		fmt.Fprintln(os.Stderr, "Error:", err)
+		logError(nil, fmt.Sprint("Error: ", err))
 		return err
 	}
 	defer writer.Close()
@@ -295,8 +329,7 @@ func rotateLogFiles() error {
 	defer archiver.Close()
 
 	if _, err := io.Copy(archiver, reader); err != nil {
-		panic(err)
-		fmt.Fprintln(os.Stderr, "Error:", err)
+		logError(nil, fmt.Sprint("Error: ", err))
 		return err
 	}
 
