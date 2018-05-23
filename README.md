@@ -366,10 +366,10 @@ E-Mail subjects from duplicacy-util will be of the following format:
 
 Success/Failure | Subject Line
 --------------- | ------------
-Success | `duplicacy-util backup of quicken results [success]`
-Failure | `duplicacy-util backup of quicken results [failed!]`
+Success | `duplicacy-util: Backup results for configuration <config-name> (success)`
+Failure | `duplicacy-util: Backup results for configuration <config-name> (FAILURE)`
 
-You can can filter on the subject line to direct the E-Mail appropriately
+You can filter on the subject line to direct the E-Mail appropriately
 to a folder of your choice.
 
 ### Management of E-Mail Messages
