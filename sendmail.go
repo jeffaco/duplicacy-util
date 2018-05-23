@@ -6,12 +6,12 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func sendTestMessage(subject string, body []string) error {
+func sendMailMessage(subject string, body []string) error {
 	m := gomail.NewMessage()
 	m.SetHeader("From", emailFromAddress)
 	m.SetHeader("To", emailToAddress)
 	m.SetHeader("Subject", subject)
-	m.SetBody("text/html", strings.Join(body, "\r\n"))
+	m.SetBody("text", strings.Join(body, "\r\n"))
 
 	d := gomail.NewDialer(emailServerHostname, emailServerPort, emailAuthUsername, emailAuthPassword)
 

@@ -50,8 +50,6 @@ is still running, a second job won't try to back up the same data again.
 
 Note that duplicacy-util is a work in progress. The short term to-do list includes:
 
-* Complete e-mail notification (a framework is in place, but not yet completed). This
-will be done very shortly (within days).
 * Create a checkpoint mechnanism. If [Duplicacy][] fails for whatever reason, then
 duplicacy-util should resume the backup where it left off, even if you back up to
 many different storages.

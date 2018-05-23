@@ -41,8 +41,8 @@ var (
 	cmdCheck  bool
 	cmdPrune  bool
 
-	sendMail	bool
-	testMail    bool
+	sendMail  bool
+	testMail  bool
 
 	debugFlag   bool
 	quietFlag   bool
@@ -87,11 +87,14 @@ func logFMessage(w io.Writer, logger *log.Logger, message string) {
 
 	text := fmt.Sprint(time.Now().Format("15:04:05"), " ", message)
 	mailBody = append(mailBody, text)
-	if w == os.Stdout {
-		fmt.Fprintln(w, text)
-	} else {
-		// Fatal message shouldn't have time prefix
-		fmt.Fprintln(w, message)
+
+	if ! quietFlag {
+		if w == os.Stdout {
+			fmt.Fprintln(w, text)
+		} else {
+			// Fatal message shouldn't have time prefix
+			fmt.Fprintln(w, message)
+		}
 	}
 }
 
@@ -109,8 +112,18 @@ func main() {
 	// Parse the command line arguments and validate results
 	flag.Parse()
 
+	// We do minimal command line processing here. Just things we KNOW
+	// won't be supported via automated launching. Otherwise, send off
+	// to processor so we can capture as much as possible via E-Mail
+	// if so configured.
+
 	if flag.NArg() != 0 {
 		logError(nil, fmt.Sprint("Error: Unrecognized arguments specified on command line: ", flag.Args()))
+		os.Exit(2)
+	}
+
+	// Parse the global configuration file, if any
+	if err := loadGlobalConfig(cmdGlobalConfig); err != nil {
 		os.Exit(2)
 	}
 
@@ -120,53 +133,91 @@ func main() {
 		os.Exit(0)
 	}
 
+	returnStatus, transmitMail := processArguments()
+
+	// Send mail if we were requested to do so
+	if transmitMail {
+		var ind string = "(success)"
+		if returnStatus != 0 { ind = "(FAILURE)" }
+		subject := fmt.Sprintf("duplicacy-util: Backup results for configuration %s %s", cmdConfig, ind)
+
+		// Send the mail message
+		if err := sendMailMessage(subject, mailBody); err != nil {
+			// If an error occurred, we can't do much about it, so just log it (forcing output)
+			quietFlag = false
+			logError(nil, fmt.Sprint("Error: ", err))
+		}
+	}
+
+	os.Exit(returnStatus)
+}
+
+func processArguments() (int, bool) {
+	var transmitMail bool = false
+
 	if cmdAll { cmdBackup, cmdPrune, cmdCheck = true, true, true }
 	if debugFlag { verboseFlag = true }
 
-	logMessage(nil, fmt.Sprintf("duplicacy-util running, version: %s, Git Hash: %s", versiontext, githash))
+	// Verbose overrides quiet
+	if verboseFlag == true && quietFlag == true { quietFlag = false }
 
-	// Parse the global configuration file, if any
-	if err := loadGlobalConfig(cmdGlobalConfig); err != nil {
-		os.Exit(2)
-	}
-
-	// Handle request to send E-Mail, if requested
+	// Handle request to send test E-Mail, if requested
 	if testMail {
-		if err := sendTestMessage("duplicacy-util: Backup results for configuration test (success)",
+		if err := sendMailMessage("duplicacy-util: Backup results for configuration test (success)",
 				[]string{"This is a test E-Mail message for a successful backup job"}); err != nil {
 			fmt.Fprintln(os.Stderr, "Error sending succcess E-Mail message:", err)
 		}
 
-		if err := sendTestMessage("duplicacy-util: Backup results for configuration test (FAILURE)",
+		if err := sendMailMessage("duplicacy-util: Backup results for configuration test (FAILURE)",
 			[]string{"This is a test E-Mail message for a failed backup job"}); err != nil {
 			fmt.Fprintln(os.Stderr, "Error sending failed E-Mail message:", err)
 		}
-		os.Exit(1)
+
+		return 1, transmitMail
+	}
+
+	// Basic handling for E-Mail; only honor it if it's configured
+	// (If it's not, disallow quiet operations or we won't see errors)
+	if sendMail {
+		if emailFromAddress == "" || emailToAddress == "" || emailServerHostname == "" || emailServerPort == 0 ||
+				emailAuthUsername == "" || emailAuthPassword == "" {
+			quietFlag = false
+			logError(nil, "Error: Unable to send E-Mail; required fields missing from global configuration")
+			return 3, transmitMail
+		}
+
+		transmitMail = true
+	} else {
+		if quietFlag {
+			quietFlag = false
+			logError(nil, "Notice: Quiet mode refused; makes no sense without sending mail")
+		}
 	}
 
 	if cmdConfig == "" {
 		logError(nil, "Error: Mandatory parameter -f is not specified (must be specified)")
-		os.Exit(2)
+		return 2, transmitMail
 	}
 
 	// Parse the configuration file and check for errors
 	// (Errors are printed to stderr as well as returned)
 	configFile.SetConfig(cmdConfig)
 	if err := configFile.LoadConfig(verboseFlag, debugFlag); err != nil {
-		os.Exit(1)
+		return 1, transmitMail
 	}
 
 	// Everything is loaded; make sure we hae something to do
 	if !cmdBackup && !cmdPrune && !cmdCheck {
 		logError(nil, "Error: No operations to perform (specify -b, -p, -c, or -a)")
-		os.Exit(1)
+		return 1, transmitMail
 	}
 
 	// Perform processing. Note that int is returned for two reasons:
 	// 1. We need to know the proper exit code
-	// 2. We want defer statements to execute, so we only use os.Exit here
+	// 2. We want defer statements to execute, so we can't use os.Exit here
 
-	os.Exit( obtainLock() )
+	logMessage(nil, fmt.Sprintf("duplicacy-util starting, version: %s, Git Hash: %s", versiontext, githash))
+	return obtainLock(), transmitMail
 }
 
 func obtainLock() int {
@@ -203,7 +254,7 @@ func obtainLock() int {
 func performBackup() error {
 	// Handle log file rotation (before any output to log file so old one doesn't get trashed)
 
-	fmt.Println(time.Now().Format("15:04:05"), "Rotating log files")
+	logMessage(nil, "Rotating log files")
 	if err := rotateLogFiles(); err != nil {
 		return err
 	}
