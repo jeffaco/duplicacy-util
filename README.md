@@ -15,6 +15,10 @@ Table of contents:
   * [Local configuration file](#local-configuration-file)
 * [Command line usage](#command-line-usage)
 * [Management of E-Mail Messages](#management-of-e-mail-messages)
+* [Scheduling duplicacy-util to run automatically](#scheduling-duplicacy-util-to-run-automatically)
+  * [Scheduling for Linux](#scheduling-for-linux)
+  * [Scheduling for Mac OS/X](#scheduling-for-mac-osx)
+  * [Scheduling for Windows](#scheduling-for-windows)
 
 -----
 
@@ -23,17 +27,17 @@ Table of contents:
 In short, `duplicacy-util` is a utility to run Duplicacy backups. While
 there are a number of
 [other tools](https://github.com/gilbertchen/duplicacy/wiki/Scripts-and-utilities-index)
-available to do similar things, duplicacy-util has a number of advantages:
+available to do similar things, `duplicacy-util` has a number of advantages:
 
 * It is completely portable. It's trivial to run on Windows, Mac OS/X,
 Linux, or any other platorm supported by the Go language. You schedule
-it, and duplicacy-utils will perform the backups. Note that [Duplicacy][]
+it, and `duplicacy-util` will perform the backups. Note that [Duplicacy][]
 itself is written in Go, so if you can use [Duplicacy][], you can use
-dupliacy-util.
+`dupliacy-util`.
 * It is self-contained. Copy a single executable, and `duplicacy-util` is
 fully functional. It is easy to install and easy to upgrade, and you don't
 need to install packages to make it work properly.
-* It is "set and forget". I use duplicacy-utils to send E-Mail upon completion. Then I
+* It is "set and forget". I use `duplicacy-util` to send E-Mail upon completion. Then I
 run scripting on my E-Mail server (I use gmail) to move successful backups to the trash.
 This means that I can review backups at any time but, if I don't, the mail messages are
 deleted after 30 days. If any backup fails, it's left in your inbox for you to review.
@@ -43,27 +47,33 @@ is backed up to a single server while other backups are backed up to multiple se
 * It is designed to be easy on resources. For example, any number of complete logs are
 saved, but older logs are compressed to save space. Very old logs are aged out and
 deleted.
-* duplicacy-util won't step on itself. You can run multiple backups concurrently, but
-duplicacy-util will skip a backup if it's already backing up a specific repository. Thus, you
+* `duplicacy-util` won't step on itself. You can run multiple backups concurrently, but
+`duplicacy-util` will skip a backup if it's already backing up a specific repository. Thus, you
 can schedule jobs as often as you would like knowing that if a backup of a repository
 is still running, a second job won't try to back up the same data again.
 
-Note that duplicacy-util is a work in progress. The short term to-do list includes:
+Note that `duplicacy-util` is a work in progress. The short term to-do list includes:
 
 * Create a checkpoint mechnanism. If [Duplicacy][] fails for whatever reason, then
-duplicacy-util should resume the backup where it left off, even if you back up to
+`duplicacy-util` should resume the backup where it left off, even if you back up to
 many different storages.
 * While designed for my usage, I would very much like feedback to see what others would
 like. If a new feature makes sense, I'm happy to add it.
 
 ### Build Instructions
 
-Building duplicacy-util from source is easy. First
+Note that binaries for common platforms are provided. See
+[releases on GitHub](https://github.com/jeffaco/duplicacy-util/releases)
+for the distributions. However, if you wish to build `duplicacy-util`
+yourself, follow instructions in this section.
+
+Building `duplicacy-util` from source is easy. First
 [install Go](https://golang.org/doc/install) itself. Once Go is installed
 and `$GOPATH` is set up, run the following commands from the command line
 to get dependencies:
 
 ```shell
+go get github.com/djherbis/times
 go get github.com/mitchellh/go-homedir       
 go get github.com/spf13/viper
 go get github.com/theckman/go-flock
@@ -88,13 +98,9 @@ This will generate a `duplicacy-util` binary in the current directory with
 the appropriate file extension for your platform (i.e. `duplicacy-util` for
 Mac OS/X or Linux, or `duplicacy-util.exe` for Windows).
 
-Note that once development of `duplicacy-util` is more complete, I'll post
-binaries for common platforms. See
-[releases on GitHub](https://github.com/jeffaco/duplicacy-util/releases).
-
 ### How do you configure duplicacy-util?
 
-duplicacy-util works off of two (or more) configuration files:
+`duplicacy-util` works off of two (or more) configuration files:
 
 * A global configuration file (that controls common settings), and
 * A repository-specific file to control how the repository should be backed up.
@@ -142,6 +148,13 @@ and contains the following:
 
 ```
 duplicacypath: /Users/Jeff/Applications/duplicacy
+
+emailFromAddress: "Donald Duck <donald.xyzzy@gmail.com>"
+emailToAddress: "Donald Duck <donald.xyzzy@gmail.com>"
+emailServerHostname: smtp.gmail.com
+emailServerPort: 465
+emailAuthUsername: donald.xyzzy@gmail.com
+emailAuthPassword: gaozqlwbztypagwt
 ```
 
 If you want E-Mail capabilities (and you almost certainly do unless
@@ -256,7 +269,7 @@ Note that `*` denotes that this section is mandatory and MUST be specified
 in the configuration file.
 
 The `storage` list contains a list of repositories to back up. Note that the
-list may be as long as required. duplicacy-util will continue loading
+list may be as long as required. `duplicacy-util` will continue loading
 monotonically increasing section numbers until no additional sections are
 found (i.e. 1, 2, 3). This is conistent with all sections in the repository
 configuration file.
@@ -349,7 +362,7 @@ Usage of ./duplicacy-util:
         Display version number
 ```
 
-Exit codes from duplicacy-util are as follows:
+Exit codes from `duplicacy-util` are as follows:
 
 Exit Code/Range | Meaning
 --------------- | -------
@@ -362,7 +375,7 @@ In the event of an error, an E-Mail will be generated with details of the
 error. Note that 200-201 operations are not considered fatal from an E-Mail
 perspective, but the fact that the backup was skipped is indicated.
 
-E-Mail subjects from duplicacy-util will be of the following format:
+E-Mail subjects from `duplicacy-util` will be of the following format:
 
 Success/Failure | Subject Line
 --------------- | ------------
@@ -458,7 +471,9 @@ function duplicacy_utils() {
 
   if (foundBackup == 0)
   {
-    GmailApp.sendEmail('<user>@<domain>.com', 'WARNING: No duplicacy-util backup logs files received', 'Please investigate backup process!');
+    GmailApp.sendEmail('<user>@<domain>.com',
+                       'WARNING: No duplicacy-util backup logs files received',
+                       'Please investigate backup process!');
   }
 }
 ```
@@ -468,3 +483,119 @@ with your Gmail domain in the script above.**
 
 After the script is set up, you can set up Google to run the script
 automatically on any schedule you wish.
+
+### Scheduling duplicacy-util to Run Automatically
+
+Scheduling `duplicacy-util` to run backups automatically (emailing the
+results automatically) finishes the job. Now backups run attended,
+automatically, relieving you of the job of doing backups yourself.
+
+Backup scheduling differs by operating system. I provide hints here,
+although there are lots of diferent ways to schedule jobs automatically.
+
+#### Scheduling for Linux
+
+Linux has a built-in rich scheduler, `cron`. The `cron` utility can run
+jobs as a user or as root; the choice is yours. These instructions assume
+that you will be running jobs as your user since you'll generally be
+backing up your user files.
+
+There's a lot of help available for `cron`.
+[Wikipedia](https://en.wikipedia.org/wiki/Cron)
+help is a good start for the average user. For purposes of example,
+you can do something like the following:
+
+```bash
+crontab -l > crontab
+echo "0 1 * * * /Users/jeff/Applications/duplicacy-util -f quicken -a -m -q" >> crontab
+crontab < crontab
+```
+
+The first command will dump your existing crontab entries to a file named
+`crontab`. This file will likely be empty if you haven't used `crontab`
+before.
+
+The second command will add an entry to your `crontab` file:
+Run `duplicacy-util` for Quicken, e-mailing results, at 1:00 AM every
+morning. See [Wikipedia](https://en.wikipedia.org/wiki/Cron) for help
+in understanding the time format.
+
+Since crontab stores entries internally, the final command will reload
+your saved crontab entries from your private `crontab` file.
+
+#### Scheduling for Mac OS/X
+
+On recent versions of Mac OS/X (*macOS High Sierra* as of the time of
+this writing), [cron](https://en.wikipedia.org/wiki/Cron) ships with
+Mac OS/X. So that is an option.
+
+[launchd]: https://developer.apple.com/library/content/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/ScheduledJobs.html
+[Lingon]: https://www.peterborgapps.com/lingon/
+
+However, on Mac OS/X, the preferred way to add a timed job is to use
+[launchd][]. Each [launchd][] job is described by a separate file.
+This means that you can manage launchd timed jobs by simply adding
+or removing a file.
+
+There are two ways to create these files:
+
+1. By hand; the file format is documented in [launchd][] documentation, or
+1. By using an automated tool. [Lingon][] is one such tool that makes
+the job of creating [launchd][] files very simple. While [Lingon][] is
+commercial, it's very inexpensive. I created the `quicken` job in
+seconds using [Lingon][]:
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>EnvironmentVariables</key>
+        <dict>
+                <key>PATH</key>
+                <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/opt/X11/bin:/usr/local/sbin</string>
+        </dict>
+        <key>Label</key>
+        <string>com.duplicacy-util.quicken</string>
+        <key>ProgramArguments</key>
+        <array>
+                <string>/Users/jeff/local/go/bin/duplicacy-util</string>
+                <string>-f</string>
+                <string>quicken</string>
+                <string>-a</string>
+                <string>-m</string>
+                <string>-q</string>
+        </array>
+        <key>RunAtLoad</key>
+        <false/>
+        <key>StartCalendarInterval</key>
+        <array>
+                <dict>
+                        <key>Hour</key>
+                        <integer>3</integer>
+                        <key>Minute</key>
+                        <integer>0</integer>
+                </dict>
+                <dict>
+                        <key>Hour</key>
+                        <integer>15</integer>
+                        <key>Minute</key>
+                        <integer>0</integer>
+                </dict>
+        </array>
+</dict>
+</plist>
+```
+
+This `plist` file will run job `quicken` twice a day: at 3:00 AM and
+at 3:00 PM, mailing the results of the backup job.
+
+#### Scheduling for Windows
+
+Windows includes a build-in rich scheduler called the `Windows Task
+Scheduler`. The `Windows Task Scheduler` is a GUI (graphical) program
+designed to make scheduling of repetitive tasks easy to perform.
+
+You can find help in numerous forms with a
+[WWW search](https://www.google.com/search?q=how+to+use+windows+task+scheduler),
+including articles and YouTube videos stepping you through the process.

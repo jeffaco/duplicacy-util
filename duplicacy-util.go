@@ -15,7 +15,6 @@
 package main
 
 import (
-	"compress/gzip"
 	"errors"
 	"io"
 	"flag"
@@ -23,7 +22,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -342,47 +340,6 @@ func performBackup() error {
 
 	logger.Println("######################################################################")
 	logMessage(logger, fmt.Sprint("Operations completed in ", elapsedTime))
-
-	return nil
-}
-
-func rotateLogFiles() error {
-	logFileRoot := filepath.Join(globalLogDir, cmdConfig) + ".log"
-
-	// Kick the older log files up by a count of one
-	for i := globalLogFileCount - 2; i >= 1; i-- {
-		os.Rename(logFileRoot + "." + strconv.Itoa(i) + ".gz",
-			logFileRoot + "." + strconv.Itoa(i+1) + ".gz")
-	}
-
-	// If uncompressed log file exists, rename it and compress it
-	if _, err := os.Stat(logFileRoot); os.IsNotExist(err) {
-		return nil
-	}
-
-	// Compress <file.log> into <file.log.1.gz>
-	reader, err := os.Open(logFileRoot)
-	if err != nil {
-		logError(nil, fmt.Sprint("Error: ", err))
-		return err
-	}
-
-	writer, err := os.Create(logFileRoot + ".1.gz")
-	if err != nil {
-		reader.Close()
-		logError(nil, fmt.Sprint("Error: ", err))
-		return err
-	}
-	defer writer.Close()
-
-	archiver := gzip.NewWriter(writer)
-	archiver.Name = logFileRoot + ".1.gz"
-	defer archiver.Close()
-
-	if _, err := io.Copy(archiver, reader); err != nil {
-		logError(nil, fmt.Sprint("Error: ", err))
-		return err
-	}
 
 	return nil
 }
