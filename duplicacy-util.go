@@ -22,11 +22,18 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/theckman/go-flock"
 )
+
+type backupRevision struct {
+	storage string
+	chunkData []string
+	duration string
+}
 
 var (
 	// Configuration file for backup operations
@@ -48,10 +55,11 @@ var (
 	versionFlag bool
 
 	// Version flags (passed by link stage)
-	versiontext string = "<dev>"
-	githash string     = "<unknown>"
+	versionText string = "<dev>"
+	gitHash     string = "<unknown>"
 
 	// Mail message body to send upon completion
+	backupTable []backupRevision
 	mailBody []string
 
 	// Create configuration object to load configuration file
@@ -127,7 +135,7 @@ func main() {
 
 	// If version number was requested, show it and exit
 	if versionFlag {
-		fmt.Printf("Version: %s, Git Hash: %s\n", versiontext, githash)
+		fmt.Printf("Version: %s, Git Hash: %s\n", versionText, gitHash)
 		os.Exit(0)
 	}
 
@@ -214,7 +222,7 @@ func processArguments() (int, bool) {
 	// 1. We need to know the proper exit code
 	// 2. We want defer statements to execute, so we can't use os.Exit here
 
-	logMessage(nil, fmt.Sprintf("duplicacy-util starting, version: %s, Git Hash: %s", versiontext, githash))
+	logMessage(nil, fmt.Sprintf("duplicacy-util starting, version: %s, Git Hash: %s", versionText, gitHash))
 	return obtainLock(), transmitMail
 }
 
@@ -269,24 +277,74 @@ func performBackup() error {
 
 	logMessage(logger, fmt.Sprint("Beginning backup on ", time.Now().Format("01-02-2006 15:04:05")))
 
+	// Handling when processing output from "duplicacy backup" command
+	var allChunksRegEx []string // Unused for now; will be used for HTML table in E-Mail
 
+	backupLogger := func(line string) {
+		switch {
+		// Files: 161318 total, 1666G bytes; 373 new, 15,951M bytes
+		case strings.HasPrefix(line, "Files:"):
+			logger.Println(line)
+			logMessage(logger, fmt.Sprint("  ", line))
+		// All chunks: 348444 total, 1668G bytes; 2415 new, 12,391M bytes, 12,255M bytes uploaded
+		case strings.HasPrefix(line, "All chunks:"):
+			logger.Println(line)
+
+			// Show chunks uploaded in mail log
+			re := regexp.MustCompile(`^.*: (.*); (.*)$`)
+			elements := re.FindStringSubmatch(line)
+			if len(elements) >= 3 {
+				logMessage(logger, fmt.Sprint("  Chunks Uploaded: ", elements[2]))
+			}
+
+			// Save chunk slice for inclusion into HTML portion of E-Mail message
+			re = regexp.MustCompile(`.*: (\S+) total, (\S+) bytes; (\S+) new, (\S+) bytes, (\S+) bytes uploaded`)
+			elements = re.FindStringSubmatch(line)
+			if len(elements) >= 6 {
+				allChunksRegEx = elements
+			}
+		default:
+			logger.Println(line)
+		}
+	}
+
+	copyLogger := func(line string) {
+		switch {
+		// Copy complete, 107 total chunks, 0 chunks copied, 107 skipped
+		case strings.HasPrefix(line, "Copy complete, "):
+			logger.Println(line)
+			logMessage(logger, fmt.Sprint("  ", line))
+		default:
+			logger.Println(line)
+		}
+	}
+
+	// Handling when processing output from generic "duplicacy" command
 	anon := func(s string) { logger.Println(s) }
 
 	// Perform backup/copy operations if requested
 	if cmdBackup {
 		for i := range configFile.backupInfo {
+			backupStartTime := time.Now()
 			logger.Println("######################################################################")
 			cmdArgs := []string{"backup", "-storage", configFile.backupInfo[i]["name"], "-threads", configFile.backupInfo[i]["threads"], "-stats"}
 			logMessage(logger, fmt.Sprint("Backing up to storage ", configFile.backupInfo[i]["name"],
 				" with ", configFile.backupInfo[i]["threads"], " threads"))
 			if debugFlag { logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs)) }
-			err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
+			err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, backupLogger)
 			if err != nil {
 				logError(logger, fmt.Sprint( "Error executing command: ", err))
 				return err
 			}
+			backupDuration := getTimeDiffString(backupStartTime, time.Now())
+			logMessage(logger, fmt.Sprint("  Duration: ", backupDuration))
+
+			// Save data from backup for HTML table in E-Mail
+			backupTable = append(backupTable,
+				backupRevision{storage:configFile.backupInfo[i]["name"], chunkData: allChunksRegEx, duration: backupDuration})
 		}
 		if len(configFile.copyInfo) != 0 {
+			copyStartTime := time.Now()
 			for i := range configFile.copyInfo {
 				logger.Println("######################################################################")
 				cmdArgs := []string{"copy", "-threads", configFile.copyInfo[i]["threads"],
@@ -294,11 +352,12 @@ func performBackup() error {
 				logMessage(logger, fmt.Sprint("Copying from storage ", configFile.copyInfo[i]["from"],
 					" to storage ", configFile.copyInfo[i]["to"], " with ", configFile.copyInfo[i]["threads"], " threads"))
 				if debugFlag { logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs)) }
-				err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
+				err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, copyLogger)
 				if err != nil {
 					logError(logger, fmt.Sprint("Error executing command: ", err))
 					return err
 				}
+				logMessage(logger, fmt.Sprint("  Duration: ", getTimeDiffString(copyStartTime, time.Now())))
 			}
 		}
 	}
@@ -336,10 +395,9 @@ func performBackup() error {
 	}
 
 	endTime := time.Now()
-	elapsedTime := endTime.Sub(startTime)
 
 	logger.Println("######################################################################")
-	logMessage(logger, fmt.Sprint("Operations completed in ", elapsedTime))
+	logMessage(logger, fmt.Sprint("Operations completed in ", getTimeDiffString(startTime, endTime)))
 
 	return nil
 }

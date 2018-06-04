@@ -24,8 +24,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var Filename string
-
 type ConfigFile struct {
 	// Name (without extension) of the configuration file
 	configFile string
