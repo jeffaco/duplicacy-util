@@ -16,9 +16,9 @@ package main
 
 import (
 	"errors"
-	"io"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -30,14 +30,22 @@ import (
 )
 
 type backupRevision struct {
-	storage string
-	chunkData []string
-	duration string
+	storage          string
+	chunkTotalCount  string // Like: 348444
+	chunkTotalSize   string // Like: 1668G
+	filesTotalCount  string // Like: 161318
+	filesTotalSize   string // Like: 1666G
+	filesNewCount    string // Like: 373
+	filesNewSize     string // Like: 15,951M
+	chunkNewCount    string // Like: 2415
+	chunkNewSize     string // Like: 12,391M
+	chunkNewUploaded string // Like: 12,255M
+	duration         string
 }
 
 var (
 	// Configuration file for backup operations
-	cmdConfig string
+	cmdConfig       string
 	cmdGlobalConfig string
 
 	// Binary options for what operations to perform
@@ -46,8 +54,8 @@ var (
 	cmdCheck  bool
 	cmdPrune  bool
 
-	sendMail  bool
-	testMail  bool
+	sendMail bool
+	testMail bool
 
 	debugFlag   bool
 	quietFlag   bool
@@ -60,7 +68,7 @@ var (
 
 	// Mail message body to send upon completion
 	backupTable []backupRevision
-	mailBody []string
+	mailBody    []string
 
 	// Create configuration object to load configuration file
 	configFile *ConfigFile = NewConfigFile()
@@ -94,7 +102,7 @@ func logFMessage(w io.Writer, logger *log.Logger, message string) {
 	text := fmt.Sprint(time.Now().Format("15:04:05"), " ", message)
 	mailBody = append(mailBody, text)
 
-	if ! quietFlag {
+	if !quietFlag {
 		if w == os.Stdout {
 			fmt.Fprintln(w, text)
 		} else {
@@ -144,11 +152,13 @@ func main() {
 	// Send mail if we were requested to do so
 	if transmitMail {
 		var ind string = "(success)"
-		if returnStatus != 0 { ind = "(FAILURE)" }
+		if returnStatus != 0 {
+			ind = "(FAILURE)"
+		}
 		subject := fmt.Sprintf("duplicacy-util: Backup results for configuration %s %s", cmdConfig, ind)
 
 		// Send the mail message
-		if err := sendMailMessage(subject, mailBody); err != nil {
+		if err := sendMailMessage(subject, htmlGenerateBody(), mailBody); err != nil {
 			// If an error occurred, we can't do much about it, so just log it (forcing output)
 			quietFlag = false
 			logError(nil, fmt.Sprint("Error: ", err))
@@ -161,20 +171,44 @@ func main() {
 func processArguments() (int, bool) {
 	var transmitMail bool = false
 
-	if cmdAll { cmdBackup, cmdPrune, cmdCheck = true, true, true }
-	if debugFlag { verboseFlag = true }
+	if cmdAll {
+		cmdBackup, cmdPrune, cmdCheck = true, true, true
+	}
+	if debugFlag {
+		verboseFlag = true
+	}
 
 	// Verbose overrides quiet
-	if verboseFlag == true && quietFlag == true { quietFlag = false }
+	if verboseFlag == true && quietFlag == true {
+		quietFlag = false
+	}
 
 	// Handle request to send test E-Mail, if requested
 	if testMail {
+		backupRecord := backupRevision{
+			storage:          "test",
+			chunkTotalCount:  "384444",
+			chunkTotalSize:   "1668G",
+			filesTotalCount:  "161318",
+			filesTotalSize:   "1666G",
+			filesNewCount:    "373",
+			filesNewSize:     "15,951M",
+			chunkNewCount:    "2415",
+			chunkNewSize:     "12,391M",
+			chunkNewUploaded: "12,255M",
+			duration:         "30:05",
+		}
+		backupTable = append(backupTable, backupRecord)
+		cmdConfig = "test"
+
 		if err := sendMailMessage("duplicacy-util: Backup results for configuration test (success)",
-				[]string{"This is a test E-Mail message for a successful backup job"}); err != nil {
+			htmlGenerateBody(),
+			[]string{"This is a test E-Mail message for a successful backup job"}); err != nil {
 			fmt.Fprintln(os.Stderr, "Error sending succcess E-Mail message:", err)
 		}
 
 		if err := sendMailMessage("duplicacy-util: Backup results for configuration test (FAILURE)",
+			htmlGenerateBody(),
 			[]string{"This is a test E-Mail message for a failed backup job"}); err != nil {
 			fmt.Fprintln(os.Stderr, "Error sending failed E-Mail message:", err)
 		}
@@ -186,7 +220,7 @@ func processArguments() (int, bool) {
 	// (If it's not, disallow quiet operations or we won't see errors)
 	if sendMail {
 		if emailFromAddress == "" || emailToAddress == "" || emailServerHostname == "" || emailServerPort == 0 ||
-				emailAuthUsername == "" || emailAuthPassword == "" {
+			emailAuthUsername == "" || emailAuthPassword == "" {
 			quietFlag = false
 			logError(nil, "Error: Unable to send E-Mail; required fields missing from global configuration")
 			return 3, transmitMail
@@ -228,7 +262,7 @@ func processArguments() (int, bool) {
 
 func obtainLock() int {
 	// Obtain a lock to make sure we don't overlap operations against a configuration
-	lockfile := filepath.Join(globalLockDir, cmdConfig + ".lock")
+	lockfile := filepath.Join(globalLockDir, cmdConfig+".lock")
 	fileLock := flock.NewFlock(lockfile)
 
 	locked, err := fileLock.TryLock()
@@ -237,7 +271,7 @@ func obtainLock() int {
 		return 201
 	}
 
-	if ! locked {
+	if !locked {
 		// do not have exclusive lock
 		err = errors.New("unable to obtain lock using lockfile: " + lockfile)
 		logError(nil, fmt.Sprint("Error: ", err))
@@ -266,7 +300,7 @@ func performBackup() error {
 	}
 
 	// Create output log file
-	file, err := os.Create(filepath.Join(globalLogDir, cmdConfig + ".log"))
+	file, err := os.Create(filepath.Join(globalLogDir, cmdConfig+".log"))
 	if err != nil {
 		logError(nil, fmt.Sprint("Error: ", err))
 		return err
@@ -278,7 +312,7 @@ func performBackup() error {
 	logMessage(logger, fmt.Sprint("Beginning backup on ", time.Now().Format("01-02-2006 15:04:05")))
 
 	// Handling when processing output from "duplicacy backup" command
-	var allChunksRegEx []string // Unused for now; will be used for HTML table in E-Mail
+	var backupEntry backupRevision
 
 	backupLogger := func(line string) {
 		switch {
@@ -286,22 +320,31 @@ func performBackup() error {
 		case strings.HasPrefix(line, "Files:"):
 			logger.Println(line)
 			logMessage(logger, fmt.Sprint("  ", line))
-		// All chunks: 348444 total, 1668G bytes; 2415 new, 12,391M bytes, 12,255M bytes uploaded
-		case strings.HasPrefix(line, "All chunks:"):
-			logger.Println(line)
 
-			// Show chunks uploaded in mail log
-			re := regexp.MustCompile(`^.*: (.*); (.*)$`)
+			// Save chunk data for inclusion into HTML portion of E-Mail message
+			re := regexp.MustCompile(`.*: (\S+) total, (\S+) bytes; (\S+) new, (\S+) bytes`)
 			elements := re.FindStringSubmatch(line)
-			if len(elements) >= 3 {
-				logMessage(logger, fmt.Sprint("  Chunks Uploaded: ", elements[2]))
+			if len(elements) >= 4 {
+				backupEntry.filesTotalCount = elements[1]
+				backupEntry.filesTotalSize = elements[2]
+				backupEntry.filesNewCount = elements[3]
+				backupEntry.filesNewSize = elements[4]
 			}
 
-			// Save chunk slice for inclusion into HTML portion of E-Mail message
-			re = regexp.MustCompile(`.*: (\S+) total, (\S+) bytes; (\S+) new, (\S+) bytes, (\S+) bytes uploaded`)
-			elements = re.FindStringSubmatch(line)
+			// All chunks: 348444 total, 1668G bytes; 2415 new, 12,391M bytes, 12,255M bytes uploaded
+		case strings.HasPrefix(line, "All chunks:"):
+			logger.Println(line)
+			logMessage(logger, fmt.Sprint("  ", line))
+
+			// Save chunk data for inclusion into HTML portion of E-Mail message
+			re := regexp.MustCompile(`.*: (\S+) total, (\S+) bytes; (\S+) new, (\S+) bytes, (\S+) bytes uploaded`)
+			elements := re.FindStringSubmatch(line)
 			if len(elements) >= 6 {
-				allChunksRegEx = elements
+				backupEntry.chunkTotalCount = elements[1]
+				backupEntry.chunkTotalSize = elements[2]
+				backupEntry.chunkNewCount = elements[3]
+				backupEntry.chunkNewSize = elements[4]
+				backupEntry.chunkNewUploaded = elements[5]
 			}
 		default:
 			logger.Println(line)
@@ -330,18 +373,21 @@ func performBackup() error {
 			cmdArgs := []string{"backup", "-storage", configFile.backupInfo[i]["name"], "-threads", configFile.backupInfo[i]["threads"], "-stats"}
 			logMessage(logger, fmt.Sprint("Backing up to storage ", configFile.backupInfo[i]["name"],
 				" with ", configFile.backupInfo[i]["threads"], " threads"))
-			if debugFlag { logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs)) }
+			if debugFlag {
+				logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
+			}
 			err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, backupLogger)
 			if err != nil {
-				logError(logger, fmt.Sprint( "Error executing command: ", err))
+				logError(logger, fmt.Sprint("Error executing command: ", err))
 				return err
 			}
 			backupDuration := getTimeDiffString(backupStartTime, time.Now())
 			logMessage(logger, fmt.Sprint("  Duration: ", backupDuration))
 
 			// Save data from backup for HTML table in E-Mail
-			backupTable = append(backupTable,
-				backupRevision{storage:configFile.backupInfo[i]["name"], chunkData: allChunksRegEx, duration: backupDuration})
+			backupEntry.storage = configFile.backupInfo[i]["name"]
+			backupEntry.duration = backupDuration
+			backupTable = append(backupTable, backupEntry)
 		}
 		if len(configFile.copyInfo) != 0 {
 			copyStartTime := time.Now()
@@ -351,7 +397,9 @@ func performBackup() error {
 					"-from", configFile.copyInfo[i]["from"], "-to", configFile.copyInfo[i]["to"]}
 				logMessage(logger, fmt.Sprint("Copying from storage ", configFile.copyInfo[i]["from"],
 					" to storage ", configFile.copyInfo[i]["to"], " with ", configFile.copyInfo[i]["threads"], " threads"))
-				if debugFlag { logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs)) }
+				if debugFlag {
+					logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
+				}
 				err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, copyLogger)
 				if err != nil {
 					logError(logger, fmt.Sprint("Error executing command: ", err))
@@ -369,7 +417,9 @@ func performBackup() error {
 			cmdArgs := []string{"prune", "-all", "-storage", configFile.pruneInfo[i]["storage"]}
 			cmdArgs = append(cmdArgs, strings.Split(configFile.pruneInfo[i]["keep"], " ")...)
 			logMessage(logger, fmt.Sprint("Pruning storage ", configFile.pruneInfo[i]["storage"]))
-			if debugFlag { logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs)) }
+			if debugFlag {
+				logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
+			}
 			err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
 			if err != nil {
 				logError(logger, fmt.Sprint("Error executing command: ", err))
@@ -383,9 +433,13 @@ func performBackup() error {
 		for i := range configFile.checkInfo {
 			logger.Println("######################################################################")
 			cmdArgs := []string{"check", "-storage", configFile.checkInfo[i]["storage"]}
-			if configFile.checkInfo[i]["all"] == "true" { cmdArgs = append(cmdArgs, "-all") }
+			if configFile.checkInfo[i]["all"] == "true" {
+				cmdArgs = append(cmdArgs, "-all")
+			}
 			logMessage(logger, fmt.Sprint("Checking storage ", configFile.pruneInfo[i]["storage"]))
-			if debugFlag { logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs)) }
+			if debugFlag {
+				logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
+			}
 			err = Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
 			if err != nil {
 				logError(logger, fmt.Sprint("Error executing command: ", err))

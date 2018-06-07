@@ -15,17 +15,138 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 
 	"gopkg.in/gomail.v2"
 )
 
-func sendMailMessage(subject string, body []string) error {
+const (
+	htmlTableNone = 0 + iota
+	htmlTableBackup
+)
+
+var (
+	htmlTableContext int
+)
+
+func htmlGenerateBody() []string {
+	// Construct the HTML mail body
+	htmlBody := htmlConstructHeader()
+	if len(backupTable) != 0 {
+		htmlBody = append(htmlBody, htmlConstructTableBackupHeader()...)
+		for _, entry := range backupTable {
+			htmlBody = append(htmlBody, htmlContructTableBackupData(entry)...)
+		}
+		htmlBody = append(htmlBody, htmlConstructTableEnd()...)
+	}
+	htmlBody = append(htmlBody, htmlConstructTrailer()...)
+
+	return htmlBody
+}
+
+func htmlConstructHeader() []string {
+	htmlTableContext = htmlTableNone
+
+	return []string {
+		`<!DOCTYPE html>`,
+		`<html>`,
+		`<head>`,
+		`<style>`,
+		`table {`,
+		`    font-family: arial, sans-serif;`,
+		`    border-collapse: collapse;`,
+		`    width: 100%;`,
+		`}`,
+		`td, th {`,
+		`    border: 1px solid #dddddd;`,
+		`    text-align: right;`,
+		`    padding: 8px;`,
+		`}`,
+		``,
+		`tr:nth-child(even) {`,
+		`    background-color: #dddddd;`,
+		`}`,
+		`</style>`,
+		`</head>`,
+		`<body>`,
+		``,
+		fmt.Sprintf(`<h2>Statistics for configuration: %s</h2>`, cmdConfig),
+	}
+}
+
+func htmlConstructTableBackupHeader() []string {
+	// Validate that our table context is correct
+	if htmlTableContext != htmlTableNone {
+		panic(fmt.Sprint("Invalid HTML Table Context: ", htmlTableContext))
+	}
+
+	htmlTableContext = htmlTableBackup
+
+	return []string {
+		``,
+		`<table>`,
+		`  <tr>`,
+		`    <th style="text-align: left">Storage</th>`,
+		`    <th>Duration</th>`,
+		`    <th>Total Chunks</th>`,
+		`	 <th>Total Used</th>`,
+		`    <th>New Files</th>`,
+		`    <th>New File Size</th>`,
+		`	 <th>New Chunks</th>`,
+		`	 <th>New Uploaded</th>`,
+		`  </tr>`,
+	}
+}
+
+func htmlContructTableBackupData(data backupRevision) []string {
+	// Validate that our table context is correct
+	if htmlTableContext != htmlTableBackup {
+		panic(fmt.Sprint("Invalid HTML Table Context: ", htmlTableContext))
+	}
+
+	return [] string {
+		`  <tr>`,
+		`    <td style="text-align: left">`, data.storage, `</td>`,
+		`    <td>`, data.duration,			`</td>`,	// Like: "30:00:00"
+		`    <td>`, data.chunkTotalCount,	`</td>`,	// Like: "348444"
+		`    <td>`, data.chunkTotalSize,	`</td>`,	// Like: "1668G"
+		`    <td>`, data.filesNewCount,		`</td>`,	// Like: "373"
+		`    <td>`, data.filesNewSize,		`</td>`,	// Like: "15,951M"
+		`    <td>`, data.chunkNewCount,		`</td>`,	// Like: "2415"
+		`    <td>`, data.chunkNewUploaded,	`</td>`,	// Like: "12,255M"
+		`  </tr>`,
+	}
+}
+
+func htmlConstructTableEnd() []string {
+	// Validate that our table context is correct
+	if htmlTableContext == htmlTableNone {
+		panic(fmt.Sprint("Invalid HTML Table Context: ", htmlTableContext))
+	}
+
+	return [] string {
+		`</table>`,
+	}
+}
+
+func htmlConstructTrailer() []string {
+	return []string {
+		`</table>`,
+		`<br><br><br><b>Log Text:</b><br><br>`,
+		strings.Join(mailBody, "<br>\n"),
+		`</body>`,
+		`</html>`,
+	}
+}
+
+func sendMailMessage(subject string, bodyHTML []string, bodyText []string) error {
 	m := gomail.NewMessage()
 	m.SetHeader("From", emailFromAddress)
 	m.SetHeader("To", emailToAddress)
 	m.SetHeader("Subject", subject)
-	m.SetBody("text", strings.Join(body, "\r\n"))
+	m.SetBody("text", strings.Join(bodyText, "\r\n"))
+	m.AddAlternative("text/html", strings.Join(bodyHTML, "\r\n"))
 
 	d := gomail.NewDialer(emailServerHostname, emailServerPort, emailAuthUsername, emailAuthPassword)
 
