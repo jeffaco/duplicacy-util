@@ -36,13 +36,16 @@ perform_build()
     esac
 
     GOOS=$1 GOARCH=$2 go build \
-        -ldflags "-X main.versiontext=$VERSION -X main.githash=`git rev-parse --short HEAD`" \
+        -ldflags "-X main.versionText=$VERSION -X main.gitHash=$GITHASH" \
         -o duplicacy-util_${OSNAME}_${ARCH}_${VERSION}${EXTENSION}
 }
 
 # Grab the version number
 
 source version
+GITHASH=`git rev-parse --short HEAD`
+echo "Version: $VERSION, hash: $GITHASH"
+echo
 
 # Now build the various versions
 
