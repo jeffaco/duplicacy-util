@@ -24,6 +24,7 @@ import (
 const (
 	htmlTableNone = 0 + iota
 	htmlTableBackup
+	htmlTableCopy
 )
 
 var (
@@ -33,6 +34,7 @@ var (
 func htmlGenerateBody() []string {
 	// Construct the HTML mail body
 	htmlBody := htmlConstructHeader()
+
 	if len(backupTable) != 0 {
 		htmlBody = append(htmlBody, htmlConstructTableBackupHeader()...)
 		for _, entry := range backupTable {
@@ -40,6 +42,15 @@ func htmlGenerateBody() []string {
 		}
 		htmlBody = append(htmlBody, htmlConstructTableEnd()...)
 	}
+
+	if len(copyTable) != 0 {
+		htmlBody = append(htmlBody, htmlConstructTableCopyHeader()...)
+		for _, entry := range copyTable {
+			htmlBody = append(htmlBody, htmlContructTableCopyData(entry)...)
+		}
+		htmlBody = append(htmlBody, htmlConstructTableEnd()...)
+	}
+
 	htmlBody = append(htmlBody, htmlConstructTrailer()...)
 
 	return htmlBody
@@ -71,7 +82,7 @@ func htmlConstructHeader() []string {
 		`</head>`,
 		`<body>`,
 		``,
-		fmt.Sprintf(`<h2>Statistics for configuration: %s</h2>`, cmdConfig),
+		fmt.Sprintf(`<h1>Statistics for configuration: %s</h1>`, cmdConfig),
 	}
 }
 
@@ -85,6 +96,7 @@ func htmlConstructTableBackupHeader() []string {
 
 	return []string {
 		``,
+		`<h3>Backup Summary:</h3>`,
 		`<table>`,
 		`  <tr>`,
 		`    <th style="text-align: left">Storage</th>`,
@@ -119,11 +131,54 @@ func htmlContructTableBackupData(data backupRevision) []string {
 	}
 }
 
+func htmlConstructTableCopyHeader() []string {
+	// Validate that our table context is correct
+	if htmlTableContext != htmlTableNone {
+		panic(fmt.Sprint("Invalid HTML Table Context: ", htmlTableContext))
+	}
+
+	htmlTableContext = htmlTableCopy
+
+	return []string {
+		``,
+		`<h3>Copy Summary:</h3>`,
+		`<table>`,
+		`  <tr>`,
+		`    <th style="text-align: left">From Storage</th>`,
+		`    <th style="text-align: left">To Storage</th>`,
+		`    <th>Duration</th>`,
+		`    <th>Total Chunks</th>`,
+		`	 <th>Chunks Skipped</th>`,
+		`	 <th>Chunks Copied</th>`,
+		`  </tr>`,
+	}
+}
+
+func htmlContructTableCopyData(data copyRevision) []string {
+	// Validate that our table context is correct
+	if htmlTableContext != htmlTableCopy {
+		panic(fmt.Sprint("Invalid HTML Table Context: ", htmlTableContext))
+	}
+
+	return [] string {
+		`  <tr>`,
+		`    <td style="text-align: left">`, data.storageFrom, `</td>`,
+		`    <td style="text-align: left">`, data.storageTo, `</td>`,
+		`    <td>`, data.duration,			`</td>`,
+		`    <td>`, data.chunkTotalCount,	`</td>`,
+		`    <td>`, data.chunkSkipCount,	`</td>`,
+		`    <td>`, data.chunkCopyCount,	`</td>`,
+		`  </tr>`,
+	}
+}
+
 func htmlConstructTableEnd() []string {
 	// Validate that our table context is correct
 	if htmlTableContext == htmlTableNone {
 		panic(fmt.Sprint("Invalid HTML Table Context: ", htmlTableContext))
 	}
+
+	htmlTableContext = htmlTableNone
 
 	return [] string {
 		`</table>`,

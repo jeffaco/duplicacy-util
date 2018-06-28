@@ -43,6 +43,15 @@ type backupRevision struct {
 	duration         string
 }
 
+type copyRevision struct {
+	storageFrom     string
+	storageTo       string // Like: 348444
+	chunkTotalCount string // Like: 109
+	chunkCopyCount  string // Like: 3
+	chunkSkipCount  string // Like: 106
+	duration        string
+}
+
 var (
 	// Configuration file for backup operations
 	cmdConfig       string
@@ -68,6 +77,7 @@ var (
 
 	// Mail message body to send upon completion
 	backupTable []backupRevision
+	copyTable   []copyRevision
 	mailBody    []string
 
 	// Create configuration object to load configuration file
@@ -185,21 +195,47 @@ func processArguments() (int, bool) {
 
 	// Handle request to send test E-Mail, if requested
 	if testMail {
-		backupRecord := backupRevision{
-			storage:          "test",
-			chunkTotalCount:  "384444",
-			chunkTotalSize:   "1668G",
-			filesTotalCount:  "161318",
-			filesTotalSize:   "1666G",
-			filesNewCount:    "373",
-			filesNewSize:     "15,951M",
-			chunkNewCount:    "2415",
-			chunkNewSize:     "12,391M",
-			chunkNewUploaded: "12,255M",
-			duration:         "30:05",
-		}
-		backupTable = append(backupTable, backupRecord)
 		cmdConfig = "test"
+
+		backupTable = []backupRevision {
+			backupRevision{
+				storage:          "b2",
+				chunkTotalCount:  "149",
+				chunkTotalSize:   "870,624K",
+				filesTotalCount:  "345",
+				filesTotalSize:   "823,261K",
+				filesNewCount:    "1",
+				filesNewSize:     "7,984K",
+				chunkNewCount:    "6",
+				chunkNewSize:     "8,106K",
+				chunkNewUploaded: "3,410K",
+				duration:         "9 seconds",
+			},
+			backupRevision{
+				storage:          "azure-direct",
+				chunkTotalCount:  "149",
+				chunkTotalSize:   "870,624K",
+				filesTotalCount:  "345",
+				filesTotalSize:   "823,261K",
+				filesNewCount:    "1",
+				filesNewSize:     "7,984K",
+				chunkNewCount:    "6",
+				chunkNewSize:     "8,106K",
+				chunkNewUploaded: "3,410K",
+				duration:         "2 seconds",
+			},
+		}
+
+		copyTable = []copyRevision {
+			copyRevision{
+				storageFrom:  "b2",
+				storageTo:    "azure-direct",
+				chunkTotalCount: "109",
+				chunkCopyCount:  "3",
+				chunkSkipCount:  "106",
+				duration:        "9 seconds",
+			},
+		}
 
 		if err := sendMailMessage("duplicacy-util: Backup results for configuration test (success)",
 			htmlGenerateBody(),
@@ -313,6 +349,7 @@ func performBackup() error {
 
 	// Handling when processing output from "duplicacy backup" command
 	var backupEntry backupRevision
+	var copyEntry copyRevision
 
 	backupLogger := func(line string) {
 		switch {
@@ -357,6 +394,15 @@ func performBackup() error {
 		case strings.HasPrefix(line, "Copy complete, "):
 			logger.Println(line)
 			logMessage(logger, fmt.Sprint("  ", line))
+
+			// Save chunk data for inclusion into HTML portion of E-Mail message
+			re := regexp.MustCompile(`Copy complete, (\S+) total chunks, (\S+) chunks copied, (\S+) skipped`)
+			elements := re.FindStringSubmatch(line)
+			if len(elements) >= 4 {
+				copyEntry.chunkTotalCount = elements[1]
+				copyEntry.chunkCopyCount = elements[2]
+				copyEntry.chunkSkipCount = elements[3]
+			}
 		default:
 			logger.Println(line)
 		}
@@ -390,8 +436,8 @@ func performBackup() error {
 			backupTable = append(backupTable, backupEntry)
 		}
 		if len(configFile.copyInfo) != 0 {
-			copyStartTime := time.Now()
 			for i := range configFile.copyInfo {
+				copyStartTime := time.Now()
 				logger.Println("######################################################################")
 				cmdArgs := []string{"copy", "-threads", configFile.copyInfo[i]["threads"],
 					"-from", configFile.copyInfo[i]["from"], "-to", configFile.copyInfo[i]["to"]}
@@ -405,7 +451,14 @@ func performBackup() error {
 					logError(logger, fmt.Sprint("Error executing command: ", err))
 					return err
 				}
+				copyDuration := getTimeDiffString(copyStartTime, time.Now())
 				logMessage(logger, fmt.Sprint("  Duration: ", getTimeDiffString(copyStartTime, time.Now())))
+
+				// Save data from backup for HTML table in E-Mail
+				copyEntry.storageFrom = configFile.copyInfo[i]["from"]
+				copyEntry.storageTo = configFile.copyInfo[i]["to"]
+				copyEntry.duration  = copyDuration
+				copyTable = append(copyTable, copyEntry)
 			}
 		}
 	}
