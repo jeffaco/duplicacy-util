@@ -95,6 +95,13 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 				} else {
 					storageMap["threads"] = "1"
 				}
+				// Default to vss:false if not otherwise specified
+				vssFlag := v.GetBool(key + ".vss")
+				if vssFlag {
+					storageMap["vss"] = "true"
+				} else {
+					storageMap["vss"] = "false"
+				}
 				config.backupInfo = append(config.backupInfo, storageMap)
 			} else {
 				break

@@ -417,8 +417,14 @@ func performBackup() error {
 			backupStartTime := time.Now()
 			logger.Println("######################################################################")
 			cmdArgs := []string{"backup", "-storage", configFile.backupInfo[i]["name"], "-threads", configFile.backupInfo[i]["threads"], "-stats"}
-			logMessage(logger, fmt.Sprint("Backing up to storage ", configFile.backupInfo[i]["name"],
-				" with ", configFile.backupInfo[i]["threads"], " threads"))
+			if configFile.backupInfo[i]["vss"] == "true" {
+				cmdArgs = append(cmdArgs, "-vss")
+				logMessage(logger, fmt.Sprint("Backing up to storage ", configFile.backupInfo[i]["name"],
+					" -vss with ", configFile.backupInfo[i]["threads"], " threads"))
+			} else {
+				logMessage(logger, fmt.Sprint("Backing up to storage ", configFile.backupInfo[i]["name"],
+					" with ", configFile.backupInfo[i]["threads"], " threads"))
+			}
 			if debugFlag {
 				logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 			}
