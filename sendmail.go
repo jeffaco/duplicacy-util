@@ -16,6 +16,7 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"strings"
 
 	"gopkg.in/gomail.v2"
@@ -186,10 +187,21 @@ func htmlConstructTableEnd() []string {
 }
 
 func htmlConstructTrailer() []string {
+	var htmlMailBody []string
+
+	for _, line := range mailBody {
+		// Quoting is a little tricky here:
+		// 1. We need to quote special HTML characters ('<', etc). Use 'html' pkg for that.
+		// 2. We may have multiple spaces in strings, and we want to retain that.
+		//    Since html.EscapeString doesn't do that, just do it ourselves.
+
+		htmlMailBody = append(htmlMailBody, strings.Replace(html.EscapeString(line), " ", "&nbsp;", -1))
+	}
+
 	return []string {
 		`</table>`,
 		`<br><br><br><b>Log Text:</b><br><br>`,
-		strings.Join(mailBody, "<br>\n"),
+		strings.Join(htmlMailBody, "<br>\n"),
 		`</body>`,
 		`</html>`,
 	}
