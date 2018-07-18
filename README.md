@@ -310,25 +310,32 @@ simple. Just use a command like:
 `duplicacy-util -f quicken -a`
 
 This says: Back up repository defined in `quicken.yaml`, performing all
-operations (back up/copy, prune, and check). If E-Mail is configured in
-the global configuration file, then E-Mail will be sent at the end of
-the run.
+operations (back up/copy, prune, and check).
 
 Output from this command is similar to:
 
 ```text
-Using global config: /Users/jeff/.duplicacy-util/duplicacy-util.yaml
-Using config file:   /Users/jeff/.duplicacy-util/quicken.yaml
-17:50:21 Rotating log files
-17:50:21 Beginning backup on 05-18-2018 17:50:21
-17:50:21 Backing up to storage b2 with 10 threads
-17:50:28 Backing up to storage azure-direct with 5 threads
-17:50:29 Copying from storage b2 to storage azure with 10 threads
-17:50:33 Pruning storage b2
-17:51:01 Pruning storage azure
-17:51:04 Checking storage b2
-17:51:06 Checking storage azure
-17:51:07 Operations completed in 45.525075541s
+17:58:25 Using global config: /Users/jeff/.duplicacy-util/duplicacy-util.yaml
+17:58:25 Using config file:   /Users/jeff/.duplicacy-util/quicken.yaml
+17:58:25 duplicacy-util starting, version: <dev>, Git Hash: <unknown>
+17:58:25 Rotating log files
+17:58:25 Beginning backup on 07-17-2018 17:58:25
+17:58:25 Backing up to storage b2 with 10 threads
+17:58:32   Files: 345 total, 823,165K bytes; 1 new, 7,964K bytes
+17:58:32   All chunks: 150 total, 890,186K bytes; 5 new, 8,086K bytes, 3,092K bytes uploaded
+17:58:32   Duration: 7 seconds
+17:58:32 Backing up to storage azure-direct with 5 threads
+17:58:33   Files: 345 total, 823,165K bytes; 1 new, 7,964K bytes
+17:58:33   All chunks: 150 total, 889,922K bytes; 5 new, 8,086K bytes, 3,092K bytes uploaded
+17:58:33   Duration: 1 second
+17:58:33 Copying from storage b2 to storage azure with 10 threads
+17:58:37   Copy complete, 110 total chunks, 3 chunks copied, 107 skipped
+17:58:37   Duration: 4 seconds
+17:58:37 Pruning storage b2
+17:58:44 Pruning storage azure
+17:58:45 Checking storage b2
+17:58:47 Checking storage azure
+17:58:48 Operations completed in 23 seconds
 ```
 
 A complete log of the backup is saved in the `logdirectory` setting in the
@@ -388,8 +395,10 @@ to a folder of your choice.
 
 ### Management of E-Mail Messages
 
-To send E-Mail, you must define a number of fields, and these fields
-depend on what E-Mail server you are using. I use Google's
+To send E-Mail, you must run `duplicacy-util` with the `-m`
+qualifier, and you must define a number of fields in the global
+configuration file. These fields depend on what E-Mail server
+you are using. I use Google's
 [gmail](https://en.wikipedia.org/wiki/Gmail)
 service, and will define my usage here.
 
