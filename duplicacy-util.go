@@ -495,7 +495,7 @@ func performBackup() error {
 			if configFile.checkInfo[i]["all"] == "true" {
 				cmdArgs = append(cmdArgs, "-all")
 			}
-			logMessage(logger, fmt.Sprint("Checking storage ", configFile.pruneInfo[i]["storage"]))
+			logMessage(logger, fmt.Sprint("Checking storage ", configFile.checkInfo[i]["storage"]))
 			if debugFlag {
 				logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 			}
