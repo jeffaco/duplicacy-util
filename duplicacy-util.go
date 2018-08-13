@@ -448,13 +448,13 @@ func performBackup() error {
 			backupTable = append(backupTable, backupEntry)
 		}
 		if len(configFile.copyInfo) != 0 {
-			for i := range configFile.copyInfo {
+			for _, copyInfo := range configFile.copyInfo {
 				copyStartTime := time.Now()
 				logger.Println("######################################################################")
-				cmdArgs := []string{"copy", "-threads", configFile.copyInfo[i]["threads"],
-					"-from", configFile.copyInfo[i]["from"], "-to", configFile.copyInfo[i]["to"]}
-				logMessage(logger, fmt.Sprint("Copying from storage ", configFile.copyInfo[i]["from"],
-					" to storage ", configFile.copyInfo[i]["to"], " with ", configFile.copyInfo[i]["threads"], " threads"))
+				cmdArgs := []string{"copy", "-threads", copyInfo["threads"],
+					"-from", copyInfo["from"], "-to", copyInfo["to"]}
+				logMessage(logger, fmt.Sprint("Copying from storage ", copyInfo["from"],
+					" to storage ", copyInfo["to"], " with ", copyInfo["threads"], " threads"))
 				if debugFlag {
 					logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 				}
@@ -467,8 +467,8 @@ func performBackup() error {
 				logMessage(logger, fmt.Sprint("  Duration: ", getTimeDiffString(copyStartTime, time.Now())))
 
 				// Save data from backup for HTML table in E-Mail
-				copyEntry.storageFrom = configFile.copyInfo[i]["from"]
-				copyEntry.storageTo = configFile.copyInfo[i]["to"]
+				copyEntry.storageFrom = copyInfo["from"]
+				copyEntry.storageTo = copyInfo["to"]
 				copyEntry.duration  = copyDuration
 				copyTable = append(copyTable, copyEntry)
 			}
@@ -477,11 +477,11 @@ func performBackup() error {
 
 	// Perform prune operations if requested
 	if cmdPrune {
-		for i := range configFile.pruneInfo {
+		for _, pruneInfo := range configFile.pruneInfo {
 			logger.Println("######################################################################")
-			cmdArgs := []string{"prune", "-all", "-storage", configFile.pruneInfo[i]["storage"]}
-			cmdArgs = append(cmdArgs, strings.Split(configFile.pruneInfo[i]["keep"], " ")...)
-			logMessage(logger, fmt.Sprint("Pruning storage ", configFile.pruneInfo[i]["storage"]))
+			cmdArgs := []string{"prune", "-all", "-storage", pruneInfo["storage"]}
+			cmdArgs = append(cmdArgs, strings.Split(pruneInfo["keep"], " ")...)
+			logMessage(logger, fmt.Sprint("Pruning storage ", pruneInfo["storage"]))
 			if debugFlag {
 				logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 			}
@@ -495,13 +495,13 @@ func performBackup() error {
 
 	// Perform check operations if requested
 	if cmdCheck {
-		for i := range configFile.checkInfo {
+		for _, checkInfo := range configFile.checkInfo {
 			logger.Println("######################################################################")
-			cmdArgs := []string{"check", "-storage", configFile.checkInfo[i]["storage"]}
-			if configFile.checkInfo[i]["all"] == "true" {
+			cmdArgs := []string{"check", "-storage", checkInfo["storage"]}
+			if checkInfo["all"] == "true" {
 				cmdArgs = append(cmdArgs, "-all")
 			}
-			logMessage(logger, fmt.Sprint("Checking storage ", configFile.checkInfo[i]["storage"]))
+			logMessage(logger, fmt.Sprint("Checking storage ", checkInfo["storage"]))
 			if debugFlag {
 				logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 			}
