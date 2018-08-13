@@ -417,20 +417,19 @@ func performBackup() error {
 			backupStartTime := time.Now()
 			logger.Println("######################################################################")
 			cmdArgs := []string{"backup", "-storage", backupInfo["name"], "-threads", backupInfo["threads"], "-stats"}
+			vssFlags := ""
 			if backupInfo["vss"] == "true" {
 				cmdArgs = append(cmdArgs, "-vss")
+				vssFlags = " -vss"
 				if backupInfo["vssTimeout"] != "" {
 					cmdArgs = append(cmdArgs, "-vss-timeout", backupInfo["vssTimeout"])
-					logMessage(logger, fmt.Sprint("Backing up to storage ", backupInfo["name"],
-						" -vss -vss-timeout ", backupInfo["vssTimeout"],  " with ", backupInfo["threads"], " threads"))
-				} else {
-					logMessage(logger, fmt.Sprint("Backing up to storage ", backupInfo["name"],
-						" -vss with ", backupInfo["threads"], " threads"))
+					vssFlags = fmt.Sprintf("%s -vss-timeout %s", vssFlags, backupInfo["vssTimeout"])
 				}
-			} else {
-				logMessage(logger, fmt.Sprint("Backing up to storage ", backupInfo["name"],
-					" with ", backupInfo["threads"], " threads"))
 			}
+
+			logMessage(logger, fmt.Sprint("Backing up to storage ", backupInfo["name"],
+				vssFlags, " with ", backupInfo["threads"], " threads"))
+
 			if debugFlag {
 				logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 			}
