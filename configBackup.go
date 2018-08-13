@@ -102,6 +102,13 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 				} else {
 					storageMap["vss"] = "false"
 				}
+				// Default to vssTimeout:"" if not otherwise specified
+				vssTimeout := v.GetInt(key + ".vssTimeout")
+				if vssTimeout != 0 {
+					storageMap["vssTimeout"] = strconv.Itoa(vssTimeout)
+				} else {
+					storageMap["vssTimeout"] = ""
+				}
 				config.backupInfo = append(config.backupInfo, storageMap)
 			} else {
 				break
