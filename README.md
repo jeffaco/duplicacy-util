@@ -281,6 +281,7 @@ Field Name | Purpose | Required | Default Value
 name | Storage name to back up | Yes | None
 threads | Number of threads to use for backup | No | 1
 vss | Enable Volume Shadow Copy service | No | false
+vssTimeout  | the timeout in seconds to wait for the Volume Shadow Copy operation to complete  | No  |  None
 
 Fields in the `copy` section (if one exists), are:
 

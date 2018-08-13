@@ -419,8 +419,14 @@ func performBackup() error {
 			cmdArgs := []string{"backup", "-storage", backupInfo["name"], "-threads", backupInfo["threads"], "-stats"}
 			if backupInfo["vss"] == "true" {
 				cmdArgs = append(cmdArgs, "-vss")
-				logMessage(logger, fmt.Sprint("Backing up to storage ", backupInfo["name"],
-					" -vss with ", backupInfo["threads"], " threads"))
+				if backupInfo["vssTimeout"] != "" {
+					cmdArgs = append(cmdArgs, "-vss-timeout", backupInfo["vssTimeout"])
+					logMessage(logger, fmt.Sprint("Backing up to storage ", backupInfo["name"],
+						" -vss -vss-timeout ", backupInfo["vssTimeout"],  " with ", backupInfo["threads"], " threads"))
+				} else {
+					logMessage(logger, fmt.Sprint("Backing up to storage ", backupInfo["name"],
+						" -vss with ", backupInfo["threads"], " threads"))
+				}
 			} else {
 				logMessage(logger, fmt.Sprint("Backing up to storage ", backupInfo["name"],
 					" with ", backupInfo["threads"], " threads"))
