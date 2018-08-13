@@ -413,17 +413,17 @@ func performBackup() error {
 
 	// Perform backup/copy operations if requested
 	if cmdBackup {
-		for i := range configFile.backupInfo {
+		for _, backupInfo := range configFile.backupInfo {
 			backupStartTime := time.Now()
 			logger.Println("######################################################################")
-			cmdArgs := []string{"backup", "-storage", configFile.backupInfo[i]["name"], "-threads", configFile.backupInfo[i]["threads"], "-stats"}
-			if configFile.backupInfo[i]["vss"] == "true" {
+			cmdArgs := []string{"backup", "-storage", backupInfo["name"], "-threads", backupInfo["threads"], "-stats"}
+			if backupInfo["vss"] == "true" {
 				cmdArgs = append(cmdArgs, "-vss")
-				logMessage(logger, fmt.Sprint("Backing up to storage ", configFile.backupInfo[i]["name"],
-					" -vss with ", configFile.backupInfo[i]["threads"], " threads"))
+				logMessage(logger, fmt.Sprint("Backing up to storage ", backupInfo["name"],
+					" -vss with ", backupInfo["threads"], " threads"))
 			} else {
-				logMessage(logger, fmt.Sprint("Backing up to storage ", configFile.backupInfo[i]["name"],
-					" with ", configFile.backupInfo[i]["threads"], " threads"))
+				logMessage(logger, fmt.Sprint("Backing up to storage ", backupInfo["name"],
+					" with ", backupInfo["threads"], " threads"))
 			}
 			if debugFlag {
 				logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
@@ -437,7 +437,7 @@ func performBackup() error {
 			logMessage(logger, fmt.Sprint("  Duration: ", backupDuration))
 
 			// Save data from backup for HTML table in E-Mail
-			backupEntry.storage = configFile.backupInfo[i]["name"]
+			backupEntry.storage = backupInfo["name"]
 			backupEntry.duration = backupDuration
 			backupTable = append(backupTable, backupEntry)
 		}
