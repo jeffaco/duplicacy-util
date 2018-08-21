@@ -383,6 +383,13 @@ func performBackup() error {
 				backupEntry.chunkNewSize = elements[4]
 				backupEntry.chunkNewUploaded = elements[5]
 			}
+
+			// Try to catch and point out password problems within dupliacy
+		case strings.HasSuffix(line, "Authorization failure"):
+			logMessage(logger,"  Error: Duplicacy appears to be prompting for a password")
+
+			logger.Println(line)
+			logMessage(logger, fmt.Sprint("  ", line))
 		default:
 			logger.Println(line)
 		}
