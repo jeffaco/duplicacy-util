@@ -1,0 +1,4 @@
+Backing up to storage b2 with 5 threads
+  Error: Duplicacy appears to be prompting for a password
+  Enter storage password:Failed to read the password: EOF
+  Duration: 0 seconds

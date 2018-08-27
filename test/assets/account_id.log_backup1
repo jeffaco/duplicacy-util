@@ -1,0 +1,2 @@
+Backing up to storage b2 with 10 threads
+Enter Backblaze Account ID:Enter Backblaze Application Key:Failed to load the Backblaze B2 storage at b2://hidden-bucket: Authorization failure
