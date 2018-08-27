@@ -183,7 +183,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 		backupDuration := getTimeDiffString(backupStartTime, time.Now())
 		// For test, could do a regexp on results, but easier to force known duration here
 		if cmdArgs[0] == "testbackup" {
-			backupDuration = getTimeDiffString(backupStartTime, backupStartTime)
+			backupDuration = "x seconds"
 		}
 		logMessage(logger, fmt.Sprint("  Duration: ", backupDuration))
 
@@ -220,7 +220,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 		copyDuration := getTimeDiffString(copyStartTime, time.Now())
 		// For test, could do a regexp on results, but easier to force known duration here
 		if cmdArgs[0] == "testbackup" {
-			copyDuration = getTimeDiffString(copyStartTime, copyStartTime)
+			copyDuration = "x seconds"
 		}
 		logMessage(logger, fmt.Sprint("  Duration: ", copyDuration))
 

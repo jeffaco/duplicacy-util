@@ -1,4 +1,4 @@
 Backing up to storage b2 with 10 threads
   Error: Duplicacy appears to be prompting for a password
   Enter Backblaze Account ID:Enter Backblaze Application Key:Failed to load the Backblaze B2 storage at b2://hidden-bucket: Authorization failure
-  Duration: 0 seconds
+  Duration: x seconds

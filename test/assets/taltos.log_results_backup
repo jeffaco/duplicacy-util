@@ -1,11 +1,11 @@
 Backing up to storage gcd with 5 threads
   Files: 175408 total, 1873G bytes; 274 new, 18,237M bytes
   All chunks: 392832 total, 1876G bytes; 418 new, 2,421M bytes, 2,211M bytes uploaded
-  Duration: 0 seconds
+  Duration: x seconds
 Backing up to storage azure-direct with 10 threads
   Files: 175408 total, 1873G bytes; 274 new, 18,237M bytes
   All chunks: 392830 total, 1876G bytes; 416 new, 2,418M bytes, 2,209M bytes uploaded
-  Duration: 0 seconds
+  Duration: x seconds
 Copying from storage gcd to storage azure with 5 threads
   Copy complete, 367278 total chunks, 8 chunks copied, 367270 skipped
-  Duration: 0 seconds
+  Duration: x seconds
