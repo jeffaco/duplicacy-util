@@ -39,12 +39,12 @@ var (
 	globalLogFileCount int
 
 	// Fields to support E-Mail
-	emailFromAddress string
-	emailToAddress string
+	emailFromAddress    string
+	emailToAddress      string
 	emailServerHostname string
-	emailServerPort int
-	emailAuthUsername string
-	emailAuthPassword string
+	emailServerPort     int
+	emailAuthUsername   string
+	emailAuthPassword   string
 )
 
 // loadGlobalConfig reads in config file and ENV variables if set.

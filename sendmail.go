@@ -60,7 +60,7 @@ func htmlGenerateBody() []string {
 func htmlConstructHeader() []string {
 	htmlTableContext = htmlTableNone
 
-	return []string {
+	return []string{
 		`<!DOCTYPE html>`,
 		`<html>`,
 		`<head>`,
@@ -95,7 +95,7 @@ func htmlConstructTableBackupHeader() []string {
 
 	htmlTableContext = htmlTableBackup
 
-	return []string {
+	return []string{
 		``,
 		`<h3>Backup Summary:</h3>`,
 		`<table>`,
@@ -118,16 +118,16 @@ func htmlContructTableBackupData(data backupRevision) []string {
 		panic(fmt.Sprint("Invalid HTML Table Context: ", htmlTableContext))
 	}
 
-	return [] string {
+	return []string{
 		`  <tr>`,
 		`    <td style="text-align: left">`, data.storage, `</td>`,
-		`    <td>`, data.duration,			`</td>`,	// Like: "30:00:00"
-		`    <td>`, data.chunkTotalCount,	`</td>`,	// Like: "348444"
-		`    <td>`, data.chunkTotalSize,	`</td>`,	// Like: "1668G"
-		`    <td>`, data.filesNewCount,		`</td>`,	// Like: "373"
-		`    <td>`, data.filesNewSize,		`</td>`,	// Like: "15,951M"
-		`    <td>`, data.chunkNewCount,		`</td>`,	// Like: "2415"
-		`    <td>`, data.chunkNewUploaded,	`</td>`,	// Like: "12,255M"
+		`    <td>`, data.duration, `</td>`, // Like: "30:00:00"
+		`    <td>`, data.chunkTotalCount, `</td>`, // Like: "348444"
+		`    <td>`, data.chunkTotalSize, `</td>`, // Like: "1668G"
+		`    <td>`, data.filesNewCount, `</td>`, // Like: "373"
+		`    <td>`, data.filesNewSize, `</td>`, // Like: "15,951M"
+		`    <td>`, data.chunkNewCount, `</td>`, // Like: "2415"
+		`    <td>`, data.chunkNewUploaded, `</td>`, // Like: "12,255M"
 		`  </tr>`,
 	}
 }
@@ -140,7 +140,7 @@ func htmlConstructTableCopyHeader() []string {
 
 	htmlTableContext = htmlTableCopy
 
-	return []string {
+	return []string{
 		``,
 		`<h3>Copy Summary:</h3>`,
 		`<table>`,
@@ -161,14 +161,14 @@ func htmlContructTableCopyData(data copyRevision) []string {
 		panic(fmt.Sprint("Invalid HTML Table Context: ", htmlTableContext))
 	}
 
-	return [] string {
+	return []string{
 		`  <tr>`,
 		`    <td style="text-align: left">`, data.storageFrom, `</td>`,
 		`    <td style="text-align: left">`, data.storageTo, `</td>`,
-		`    <td>`, data.duration,			`</td>`,
-		`    <td>`, data.chunkTotalCount,	`</td>`,
-		`    <td>`, data.chunkSkipCount,	`</td>`,
-		`    <td>`, data.chunkCopyCount,	`</td>`,
+		`    <td>`, data.duration, `</td>`,
+		`    <td>`, data.chunkTotalCount, `</td>`,
+		`    <td>`, data.chunkSkipCount, `</td>`,
+		`    <td>`, data.chunkCopyCount, `</td>`,
 		`  </tr>`,
 	}
 }
@@ -181,7 +181,7 @@ func htmlConstructTableEnd() []string {
 
 	htmlTableContext = htmlTableNone
 
-	return [] string {
+	return []string{
 		`</table>`,
 	}
 }
@@ -198,7 +198,7 @@ func htmlConstructTrailer() []string {
 		htmlMailBody = append(htmlMailBody, strings.Replace(html.EscapeString(line), " ", "&nbsp;", -1))
 	}
 
-	return []string {
+	return []string{
 		`</table>`,
 		`<br><br><br><b>Log Text:</b><br><br>`,
 		strings.Join(htmlMailBody, "<br>\n"),

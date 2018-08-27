@@ -62,26 +62,32 @@ func readCheckpoint() (int, int) {
 }
 
 func removeCheckpoint() error {
-	filename := filepath.Join(globalLockDir, cmdConfig + "_checkpoint.yaml")
+	filename := filepath.Join(globalLockDir, cmdConfig+"_checkpoint.yaml")
 	err := os.Remove(filename)
 	return err
 }
 
 func writeCheckpoint(checkpoint int, iteration int) error {
-	filename := filepath.Join(globalLockDir, cmdConfig + "_checkpoint.yaml")
+	filename := filepath.Join(globalLockDir, cmdConfig+"_checkpoint.yaml")
 
 	file, err := os.Create(filename)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	// Defer cleanup (if we had an error, delete checkpoint file
 	defer func() {
 		file.Close()
-		if err != nil { os.Remove(filename) }
+		if err != nil {
+			os.Remove(filename)
+		}
 	}()
 
 	// Write out checkpoint information in YAML format
 	_, err = file.WriteString(fmt.Sprintf("Operation: %d\nIteration: %d\n", checkpoint, iteration))
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -72,18 +72,22 @@ func TestCheckpointRead_KnownGoodFile(t *testing.T) {
 	// Use random name for the checkpoint file
 	globalLockDir = os.TempDir()
 	cmdConfig = "checkpoint-file-" + randomStringBytes(6)
-	filename := path.Join(path.Join(globalLockDir, cmdConfig + "_checkpoint.yaml"))
+	filename := path.Join(path.Join(globalLockDir, cmdConfig+"_checkpoint.yaml"))
 
 	// Write out the checkpoint file ourselves (isolate testing to readCheckpoint())
 	file, err := os.Create(filename)
-	if err != nil { t.Errorf("Error creating YAML file: %s: %s.", filename, err) }
+	if err != nil {
+		t.Errorf("Error creating YAML file: %s: %s.", filename, err)
+	}
 	defer func() {
 		file.Close()
 		os.Remove(filename)
 	}()
 
 	_, err = file.WriteString(fmt.Sprintf("Operation: %d\nIteration: %d\n", checkpoint_prune, 42))
-	if err != nil { t.Errorf("Error writing to checkpoint file: %s.", err) }
+	if err != nil {
+		t.Errorf("Error writing to checkpoint file: %s.", err)
+	}
 	file.Close()
 
 	// Now test reading the checkpoint file
@@ -100,11 +104,13 @@ func TestCheckpointRead_KnownBadFile(t *testing.T) {
 	// Use random name for the checkpoint file
 	globalLockDir = os.TempDir()
 	cmdConfig = "checkpoint-file-" + randomStringBytes(6)
-	filename := path.Join(path.Join(globalLockDir, cmdConfig + "_checkpoint.yaml"))
+	filename := path.Join(path.Join(globalLockDir, cmdConfig+"_checkpoint.yaml"))
 
 	// Write out the checkpoint file ourselves (isolate testing to readCheckpoint())
 	file, err := os.Create(filename)
-	if err != nil { t.Errorf("Error creating YAML file: %s: %s.", filename, err) }
+	if err != nil {
+		t.Errorf("Error creating YAML file: %s: %s.", filename, err)
+	}
 	defer func() {
 		file.Close()
 		os.Remove(filename)
@@ -112,7 +118,9 @@ func TestCheckpointRead_KnownBadFile(t *testing.T) {
 
 	// Write out a known-invalid checkpoint file
 	_, err = file.WriteString(fmt.Sprintf("Operation: %d\nIteration: %d\n", 42, 84))
-	if err != nil { t.Errorf("Error writing to checkpoint file: %s.", err) }
+	if err != nil {
+		t.Errorf("Error writing to checkpoint file: %s.", err)
+	}
 	file.Close()
 
 	// Now test reading the checkpoint file
@@ -128,8 +136,8 @@ func TestCheckpointRead_KnownBadFile(t *testing.T) {
 func TestCheckpointWrite(t *testing.T) {
 	testEntries := []struct {
 		checkpointExpected int
-		iterationExpected int
-		valid bool
+		iterationExpected  int
+		valid              bool
 	}{
 		{checkpoint_backup, 10, true},
 		{checkpoint_copy, 2, true},
@@ -153,7 +161,10 @@ func TestCheckpointWrite(t *testing.T) {
 		checkpoint, iteration := readCheckpoint()
 
 		// If this is an invalid entry, change what we expect
-		if ! entry.valid { entry.checkpointExpected = 0; entry.iterationExpected = 0 }
+		if !entry.valid {
+			entry.checkpointExpected = 0
+			entry.iterationExpected = 0
+		}
 
 		if checkpoint != entry.checkpointExpected {
 			t.Errorf("Incorrect checkpoint read, got '%d', expected '%d'.", checkpoint, entry.checkpointExpected)

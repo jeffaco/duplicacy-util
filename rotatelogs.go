@@ -61,7 +61,7 @@ func rotateLogFiles() error {
 	}
 
 	// Restore the file times
-	if err = os.Chtimes(logFileRoot + ".1.gz", atime, mtime); err != nil {
+	if err = os.Chtimes(logFileRoot+".1.gz", atime, mtime); err != nil {
 		logError(nil, fmt.Sprint("Error: ", err))
 		return err
 	}

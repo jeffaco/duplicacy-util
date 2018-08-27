@@ -15,8 +15,8 @@
 package main
 
 import (
-	"time"
 	"testing"
+	"time"
 )
 
 func TestTimeDiffNumbers(t *testing.T) {
@@ -59,19 +59,31 @@ func TestTimeDiffNumbers(t *testing.T) {
 
 	for _, table := range tables {
 		year, month, day, hour, min, second := getTimeDiffNumbers(table.time1, table.time2)
-		if year != table.year { t.Errorf("Year was incorrect, got %d, expected %d.", year, table.year) }
-		if month != table.month { t.Errorf("Month was incorrect, got %d, expected %d.", month, table.month) }
-		if day != table.day { t.Errorf("Day was incorrect, got %d, expected %d.", day, table.day) }
-		if hour != table.hour { t.Errorf("Hour was incorrect, got %d, expected %d.", hour, table.hour) }
-		if min != table.min { t.Errorf("Minute was incorrect, got %d, expected %d.", min, table.min) }
-		if second != table.second { t.Errorf("Second was incorrect, got %d, expected %d.", second, table.second) }
+		if year != table.year {
+			t.Errorf("Year was incorrect, got %d, expected %d.", year, table.year)
+		}
+		if month != table.month {
+			t.Errorf("Month was incorrect, got %d, expected %d.", month, table.month)
+		}
+		if day != table.day {
+			t.Errorf("Day was incorrect, got %d, expected %d.", day, table.day)
+		}
+		if hour != table.hour {
+			t.Errorf("Hour was incorrect, got %d, expected %d.", hour, table.hour)
+		}
+		if min != table.min {
+			t.Errorf("Minute was incorrect, got %d, expected %d.", min, table.min)
+		}
+		if second != table.second {
+			t.Errorf("Second was incorrect, got %d, expected %d.", second, table.second)
+		}
 	}
 }
 
 func TestTimeDiffStringWithTimes(t *testing.T) {
 	tables := []struct {
-		time1 time.Time
-		time2 time.Time
+		time1  time.Time
+		time2  time.Time
 		result string
 	}{
 		{
@@ -143,17 +155,20 @@ func TestTimeDiffStringWithTimes(t *testing.T) {
 
 	for _, table := range tables {
 		result := getTimeDiffString(table.time1, table.time2)
-		if result != table.result { t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, table.result) }
+		if result != table.result {
+			t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, table.result)
+		}
 	}
 }
-
 
 func TestTimeDiffStringWithDurationZeroSeconds(t *testing.T) {
 	startTime := time.Now()
 
 	result := getTimeDiffString(startTime, startTime)
 	expected := "0 seconds"
-	if result != expected { t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected) }
+	if result != expected {
+		t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected)
+	}
 }
 
 func TestTimeDiffStringWithDurationOneSecond(t *testing.T) {
@@ -163,7 +178,9 @@ func TestTimeDiffStringWithDurationOneSecond(t *testing.T) {
 
 	result := getTimeDiffString(startTime, diffTime)
 	expected := "1 second"
-	if result != expected { t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected) }
+	if result != expected {
+		t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected)
+	}
 }
 func TestTimeDiffStringWithDurationSeconds(t *testing.T) {
 	startTime := time.Now()
@@ -172,7 +189,9 @@ func TestTimeDiffStringWithDurationSeconds(t *testing.T) {
 
 	result := getTimeDiffString(startTime, diffTime)
 	expected := "15 seconds"
-	if result != expected { t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected) }
+	if result != expected {
+		t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected)
+	}
 }
 
 func TestTimeDiffStringWithDurationMinutes(t *testing.T) {
@@ -183,7 +202,9 @@ func TestTimeDiffStringWithDurationMinutes(t *testing.T) {
 
 	result := getTimeDiffString(startTime, diffTime)
 	expected := "2:05"
-	if result != expected { t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected) }
+	if result != expected {
+		t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected)
+	}
 }
 
 func TestTimeDiffStringWithDurationHours(t *testing.T) {
@@ -195,7 +216,9 @@ func TestTimeDiffStringWithDurationHours(t *testing.T) {
 
 	result := getTimeDiffString(startTime, diffTime)
 	expected := "3:02:05"
-	if result != expected { t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected) }
+	if result != expected {
+		t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected)
+	}
 }
 
 func TestTimeDiffStringWithDurationOneDay(t *testing.T) {
@@ -208,7 +231,9 @@ func TestTimeDiffStringWithDurationOneDay(t *testing.T) {
 
 	result := getTimeDiffString(startTime, diffTime)
 	expected := "1 day, 3:02:05"
-	if result != expected { t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected) }
+	if result != expected {
+		t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected)
+	}
 }
 
 func TestTimeDiffStringWithDurationDays(t *testing.T) {
@@ -217,9 +242,11 @@ func TestTimeDiffStringWithDurationDays(t *testing.T) {
 	diffTime := startTime.Add(5 * time.Second)
 	diffTime = diffTime.Add(2 * time.Minute)
 	diffTime = diffTime.Add(3 * time.Hour)
-	diffTime = diffTime.Add(4*24 * time.Hour) // Days
+	diffTime = diffTime.Add(4 * 24 * time.Hour) // Days
 
 	result := getTimeDiffString(startTime, diffTime)
 	expected := "4 days, 3:02:05"
-	if result != expected { t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected) }
+	if result != expected {
+		t.Errorf("Result was incorrect, got '%s', expected '%s'.", result, expected)
+	}
 }
