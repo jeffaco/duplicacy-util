@@ -9,11 +9,12 @@ This repository contains utilities to run [Duplicacy][] on any platform supporte
 Table of contents:
 
 * [What is duplicacy-util?](#what-is-duplicacy-util)
-* [Build Instructions](#build-instructions)
+* [Build instructions](#build-instructions)
 * [How do you configure duplicacy-util?](#how-do-you-configure-duplicacy-util)
   * [Global configuration file](#global-configuration-file)
   * [Local configuration file](#local-configuration-file)
 * [Command line usage](#command-line-usage)
+* [Getting started with duplicacy-util](#getting-started-with-duplicacy-util)
 * [Management of E-Mail Messages](#management-of-e-mail-messages)
 * [Scheduling duplicacy-util to run automatically](#scheduling-duplicacy-util-to-run-automatically)
   * [Scheduling for Linux](#scheduling-for-linux)
@@ -393,6 +394,38 @@ Failure | `duplicacy-util: Backup results for configuration <config-name> (FAILU
 
 You can filter on the subject line to direct the E-Mail appropriately
 to a folder of your choice.
+
+### Getting started with duplicacy-util
+
+The `duplicacy-util` program has no knowledge of [Duplicacy][] repository passwords.
+As a result, if [Duplicacy][] prompts for a password, `duplicacy-util` won't be able
+to respond to the prompt, and the backup will fail (with suitable output in the log
+file).
+
+To set up the backup for initial use, there is
+[documentation](https://github.com/mattjm/duplicacy-script) that @mattjm worked up
+that is pretty good. That said, these are the basic steps I followed to initialize
+backing up Quicken, one of my repositories:
+
+```
+duplicacy init -e -storage-name b2 quicken b2://<bucket-name>
+duplicacy add -e -copy b2 azure quicken azure://<bucket-name>      # Copy
+duplicacy add -e azure-direct quicken-direct azure:<bucket-name>   # Direct
+
+duplicacy backup -storage b2 -stats -threads 10
+duplicacy backup -storage azure-direct -stats -threads 5
+duplicacy copy -from b2 -to azure -stats -threads 10
+```
+
+This initialized the repository and set it up for backup to both Backblaze and
+Azure. It also performed the first backup, taking care of final password prompts.
+After this, `duplicacy-util` should function properly, and [Duplicacy][] should
+not prompt for passwords.
+
+You should study the [Duplicacy Wiki](https://github.com/gilbertchen/duplicacy/wiki)
+carefully, the documentation is quite good. It explains how [Duplicacy][] works
+and various commands that [Duplicacy][] supports.
+
 
 ### Management of E-Mail Messages
 
