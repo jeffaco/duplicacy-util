@@ -61,7 +61,7 @@ func TestRunDuplicacyBackup(t *testing.T) {
 			[]map[string]string{
 				{"name": "b2", "threads": "10", "vss": "false"},
 			},
-			[]map[string]string{ },
+			[]map[string]string{},
 		},
 		// Duplicacy Error: Enter storage password:Failed to read the password: EOF
 		{
@@ -69,7 +69,7 @@ func TestRunDuplicacyBackup(t *testing.T) {
 			[]map[string]string{
 				{"name": "b2", "threads": "5", "vss": "false"},
 			},
-			[]map[string]string{ },
+			[]map[string]string{},
 		},
 		// Test of long, very involved backup
 		{"taltos.log", "taltos.log_results_backup",

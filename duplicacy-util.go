@@ -202,7 +202,7 @@ func processArguments() (int, bool) {
 		cmdConfig = "test"
 
 		backupTable = []backupRevision{
-			backupRevision{
+			{
 				storage:          "b2",
 				chunkTotalCount:  "149",
 				chunkTotalSize:   "870,624K",
@@ -215,7 +215,7 @@ func processArguments() (int, bool) {
 				chunkNewUploaded: "3,410K",
 				duration:         "9 seconds",
 			},
-			backupRevision{
+			{
 				storage:          "azure-direct",
 				chunkTotalCount:  "149",
 				chunkTotalSize:   "870,624K",
@@ -231,7 +231,7 @@ func processArguments() (int, bool) {
 		}
 
 		copyTable = []copyRevision{
-			copyRevision{
+			{
 				storageFrom:     "b2",
 				storageTo:       "azure-direct",
 				chunkTotalCount: "109",
