@@ -181,6 +181,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 			return err
 		}
 		backupDuration := getTimeDiffString(backupStartTime, time.Now())
+
 		// For test, could do a regexp on results, but easier to force known duration here
 		if cmdArgs[0] == "testbackup" {
 			backupDuration = "x seconds"
@@ -218,6 +219,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 			return err
 		}
 		copyDuration := getTimeDiffString(copyStartTime, time.Now())
+
 		// For test, could do a regexp on results, but easier to force known duration here
 		if cmdArgs[0] == "testbackup" {
 			copyDuration = "x seconds"
@@ -239,12 +241,22 @@ func performDuplicacyPrune(logger *log.Logger, testArgs []string) error {
 	anon := func(s string) { logger.Println(s) }
 
 	// Perform prune operations
-	for _, pruneInfo := range configFile.pruneInfo {
+	for i, pruneInfo := range configFile.pruneInfo {
 		logger.Println("######################################################################")
-		cmdArgs := testArgs
+
+		// Minor support for unit tests - distasteful but only reasonable option
+		cmdArgs := make([]string, len(testArgs))
+		copy(cmdArgs, testArgs)
+		if len(cmdArgs) > 0 && cmdArgs[0] == "testbackup" {
+			cmdArgs[1] = testArgs[1] + "_prune" + strconv.Itoa(i+1)
+		}
+
+		// Build remainder of command arguments
 		cmdArgs = append(testArgs, "prune", "-all", "-storage", pruneInfo["storage"])
 		cmdArgs = append(cmdArgs, strings.Split(pruneInfo["keep"], " ")...)
 		logMessage(logger, fmt.Sprint("Pruning storage ", pruneInfo["storage"]))
+
+		// Execute duplicacy
 		if debugFlag {
 			logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 		}
@@ -263,13 +275,24 @@ func performDuplicacyCheck(logger *log.Logger, testArgs []string) error {
 	anon := func(s string) { logger.Println(s) }
 
 	// Perform check operations
-	for _, checkInfo := range configFile.checkInfo {
+	for i, checkInfo := range configFile.checkInfo {
 		logger.Println("######################################################################")
-		cmdArgs := []string{"check", "-storage", checkInfo["storage"]}
+
+		// Minor support for unit tests - distasteful but only reasonable option
+		cmdArgs := make([]string, len(testArgs))
+		copy(cmdArgs, testArgs)
+		if len(cmdArgs) > 0 && cmdArgs[0] == "testbackup" {
+			cmdArgs[1] = testArgs[1] + "_check" + strconv.Itoa(i+1)
+		}
+
+		// Build remainder of command arguments
+		cmdArgs = append(cmdArgs, "check", "-storage", checkInfo["storage"])
 		if checkInfo["all"] == "true" {
 			cmdArgs = append(cmdArgs, "-all")
 		}
 		logMessage(logger, fmt.Sprint("Checking storage ", checkInfo["storage"]))
+
+		// Execute duplicacy
 		if debugFlag {
 			logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 		}

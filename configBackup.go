@@ -48,7 +48,7 @@ func (config *ConfigFile) SetConfig(cnfFile string) {
 }
 
 func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
-	var err error = nil
+	var err error
 
 	// Separate config file should use new viper instance
 	v := viper.New()
