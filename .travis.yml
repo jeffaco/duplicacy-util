@@ -5,10 +5,15 @@ go:
   - 1.11.x
 
 before_install:
+  # Build tools
   - go get -v github.com/golang/lint/golint
   - go get -v github.com/gordonklaus/ineffassign
+  # Project dependencies
+  - go get github.com/djherbis/times
+  - go get github.com/mitchellh/go-homedir       
+  - go get github.com/spf13/viper
+  - go get github.com/theckman/go-flock
+  - go get gopkg.in/gomail.v2
 
 script:
-  - go vet
-  - go test -v ./...
-  - ineffassign .
+  - make test
