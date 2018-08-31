@@ -7,7 +7,6 @@ go:
 before_install:
   - go get -v github.com/golang/lint/golint
   - go get -v github.com/gordonklaus/ineffassign
-  - go install github.com/gordonklaus/ineffassign
 
 script:
   - go vet
