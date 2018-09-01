@@ -23,11 +23,11 @@ import (
 )
 
 const (
-	checkpoint_none = 0 + iota
-	checkpoint_backup
-	checkpoint_copy
-	checkpoint_prune
-	checkpoint_check
+	checkpointNone = 0 + iota
+	checkpointBackup
+	checkpointCopy
+	checkpointPrune
+	checkpointCheck
 )
 
 func readCheckpoint() (int, int) {
@@ -38,7 +38,7 @@ func readCheckpoint() (int, int) {
 
 	// Read in config file if it is found
 	if err := v.ReadInConfig(); err != nil {
-		return checkpoint_none, 0
+		return checkpointNone, 0
 	}
 
 	// Read in checkpoint information
@@ -47,14 +47,14 @@ func readCheckpoint() (int, int) {
 
 	// Do some basic validation of checkpoint information
 	switch operation {
-	case checkpoint_backup:
-	case checkpoint_copy:
-	case checkpoint_prune:
-	case checkpoint_check:
+	case checkpointBackup:
+	case checkpointCopy:
+	case checkpointPrune:
+	case checkpointCheck:
 		break
 
 	default:
-		operation = checkpoint_none
+		operation = checkpointNone
 		iteration = 0
 	}
 

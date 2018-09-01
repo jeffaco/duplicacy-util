@@ -60,8 +60,8 @@ func TestCheckPointRead_NotFound(t *testing.T) {
 	cmdConfig = "SomeCheckpointFileThatShouldNotExist"
 	checkpoint, iteration := readCheckpoint()
 
-	if checkpoint != checkpoint_none {
-		t.Errorf("Checkpoint is incorrect, got '%d', expected '%d'.", checkpoint, checkpoint_none)
+	if checkpoint != checkpointNone {
+		t.Errorf("Checkpoint is incorrect, got '%d', expected '%d'.", checkpoint, checkpointNone)
 	}
 	if iteration != 0 {
 		t.Errorf("iteration is incorrect, got '%d', expected '%d'.", iteration, 0)
@@ -84,7 +84,7 @@ func TestCheckpointRead_KnownGoodFile(t *testing.T) {
 		os.Remove(filename)
 	}()
 
-	_, err = file.WriteString(fmt.Sprintf("Operation: %d\nIteration: %d\n", checkpoint_prune, 42))
+	_, err = file.WriteString(fmt.Sprintf("Operation: %d\nIteration: %d\n", checkpointPrune, 42))
 	if err != nil {
 		t.Errorf("Error writing to checkpoint file: %s.", err)
 	}
@@ -92,8 +92,8 @@ func TestCheckpointRead_KnownGoodFile(t *testing.T) {
 
 	// Now test reading the checkpoint file
 	checkpoint, iteration := readCheckpoint()
-	if checkpoint != checkpoint_prune {
-		t.Errorf("Incorrect checkpoint read, got '%d', expected '%d'.", checkpoint, checkpoint_prune)
+	if checkpoint != checkpointPrune {
+		t.Errorf("Incorrect checkpoint read, got '%d', expected '%d'.", checkpoint, checkpointPrune)
 	}
 	if iteration != 42 {
 		t.Errorf("Incorrect iteration read, got '%d', expected '%d'.", iteration, 42)
@@ -125,8 +125,8 @@ func TestCheckpointRead_KnownBadFile(t *testing.T) {
 
 	// Now test reading the checkpoint file
 	checkpoint, iteration := readCheckpoint()
-	if checkpoint != checkpoint_none {
-		t.Errorf("Incorrect checkpoint read, got '%d', expected '%d'.", checkpoint, checkpoint_none)
+	if checkpoint != checkpointNone {
+		t.Errorf("Incorrect checkpoint read, got '%d', expected '%d'.", checkpoint, checkpointNone)
 	}
 	if iteration != 0 {
 		t.Errorf("Incorrect iteration read, got '%d', expected '%d'.", iteration, 0)
@@ -139,13 +139,13 @@ func TestCheckpointWrite(t *testing.T) {
 		iterationExpected  int
 		valid              bool
 	}{
-		{checkpoint_backup, 10, true},
-		{checkpoint_copy, 2, true},
-		{checkpoint_prune, 1, true},
-		{checkpoint_check, 3, true},
+		{checkpointBackup, 10, true},
+		{checkpointCopy, 2, true},
+		{checkpointPrune, 1, true},
+		{checkpointCheck, 3, true},
 
 		{10, 5, false},
-		{checkpoint_check + 1, 6, false},
+		{checkpointCheck + 1, 6, false},
 		{-1, 7, false},
 	}
 

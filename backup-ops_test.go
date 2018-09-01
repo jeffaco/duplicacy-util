@@ -182,11 +182,8 @@ func readFileToStdout(logFile string) error {
 	for scanner.Scan() {
 		fmt.Println(scanner.Text())
 	}
-	if err := scanner.Err(); err != nil {
-		return err
-	}
 
-	return nil
+	return scanner.Err()
 }
 
 // TestBackupOpsHelperProcess isn't a real test; it's a helper process for TestRunDuplicacy*

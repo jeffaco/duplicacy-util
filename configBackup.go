@@ -24,9 +24,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-type ConfigFile struct {
+type configurationFile struct {
 	// Name (without extension) of the configuration file
-	configFile string
+	configFilename string
 
 	// Directory for repository
 	repoDir string
@@ -38,16 +38,16 @@ type ConfigFile struct {
 	checkInfo  []map[string]string
 }
 
-func NewConfigFile() *ConfigFile {
-	config := new(ConfigFile)
+func newConfigurationFile() *configurationFile {
+	config := new(configurationFile)
 	return config
 }
 
-func (config *ConfigFile) SetConfig(cnfFile string) {
-	config.configFile = cnfFile
+func (config *configurationFile) setConfig(cnfFile string) {
+	config.configFilename = cnfFile
 }
 
-func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
+func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) error {
 	var err error
 
 	// Separate config file should use new viper instance
@@ -55,7 +55,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 
 	// Search config in home directory with name ".duplicacy-util" (without extension).
 	v.AddConfigPath("$HOME/.duplicacy-util")
-	v.SetConfigName(config.configFile)
+	v.SetConfigName(config.configFilename)
 
 	v.AutomaticEnv() // read in environment variables that match
 
@@ -78,7 +78,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 	// Populate backup information from storages
 	if v.IsSet("storage") {
 		for i := 1; ; i++ {
-			var storageMap map[string]string = make(map[string]string)
+			var storageMap = make(map[string]string)
 
 			key := "storage." + strconv.Itoa(i)
 			if v.IsSet(key) {
@@ -127,7 +127,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 	// Populate copy information
 	if v.IsSet("copy") {
 		for i := 1; ; i++ {
-			var copyMap map[string]string = make(map[string]string)
+			var copyMap = make(map[string]string)
 
 			key := "copy." + strconv.Itoa(i)
 			if v.IsSet(key) {
@@ -160,7 +160,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 	// Populate prune information
 	if v.IsSet("prune") {
 		for i := 1; ; i++ {
-			var pruneMap map[string]string = make(map[string]string)
+			var pruneMap = make(map[string]string)
 
 			key := "prune." + strconv.Itoa(i)
 			if v.IsSet(key) {
@@ -200,7 +200,7 @@ func (config *ConfigFile) LoadConfig(verboseFlag bool, debugFlag bool) error {
 	// Populate check information
 	if v.IsSet("check") {
 		for i := 1; ; i++ {
-			var checkMap map[string]string = make(map[string]string)
+			var checkMap = make(map[string]string)
 
 			key := "check." + strconv.Itoa(i)
 			if v.IsSet(key) {

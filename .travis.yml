@@ -6,8 +6,9 @@ go:
 
 before_install:
   # Build tools
-  - go get -v github.com/golang/lint/golint
-  - go get -v github.com/gordonklaus/ineffassign
+  - go get github.com/golang/lint/golint
+  - go get github.com/gordonklaus/ineffassign
+
   # Project dependencies
   - go get github.com/djherbis/times
   - go get github.com/mitchellh/go-homedir       

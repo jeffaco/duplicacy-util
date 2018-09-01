@@ -70,8 +70,8 @@ var (
 	versionFlag bool
 
 	// Version flags (passed by link stage)
-	versionText string = "<dev>"
-	gitHash     string = "<unknown>"
+	versionText = "<dev>"
+	gitHash     = "<unknown>"
 
 	// Mail message body to send upon completion
 	backupTable []backupRevision
@@ -79,10 +79,10 @@ var (
 	mailBody    []string
 
 	// Create configuration object to load configuration file
-	configFile *ConfigFile = NewConfigFile()
+	configFile = newConfigurationFile()
 
 	// Display time in local output messages?
-	loggingSystemDisplayTime bool = true
+	loggingSystemDisplayTime = true
 )
 
 func init() {
@@ -165,7 +165,7 @@ func main() {
 
 	// Send mail if we were requested to do so
 	if transmitMail {
-		var ind string = "(success)"
+		var ind = "(success)"
 		if returnStatus != 0 {
 			ind = "(FAILURE)"
 		}
@@ -183,7 +183,7 @@ func main() {
 }
 
 func processArguments() (int, bool) {
-	var transmitMail bool = false
+	var transmitMail = false
 
 	if cmdAll {
 		cmdBackup, cmdPrune, cmdCheck = true, true, true
@@ -281,8 +281,8 @@ func processArguments() (int, bool) {
 
 	// Parse the configuration file and check for errors
 	// (Errors are printed to stderr as well as returned)
-	configFile.SetConfig(cmdConfig)
-	if err := configFile.LoadConfig(verboseFlag, debugFlag); err != nil {
+	configFile.setConfig(cmdConfig)
+	if err := configFile.loadConfig(verboseFlag, debugFlag); err != nil {
 		return 1, transmitMail
 	}
 

@@ -21,12 +21,12 @@ import (
 
 var execCommand = exec.Command
 
-func ExecutorStdout(cmdName string, cmdArgs []string) (stdOut []byte, err error) {
+func executorStdout(cmdName string, cmdArgs []string) (stdOut []byte, err error) {
 	stdOut, err = exec.Command(cmdName, cmdArgs...).Output()
 	return stdOut, err
 }
 
-func Executor(cmdName string, cmdArgs []string, defDir string, output func(string)) error {
+func executor(cmdName string, cmdArgs []string, defDir string, output func(string)) error {
 	cmd := execCommand(cmdName, cmdArgs...)
 	cmd.Dir = defDir
 	stdout, err := cmd.StdoutPipe()

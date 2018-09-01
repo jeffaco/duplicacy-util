@@ -175,7 +175,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 		if debugFlag {
 			logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 		}
-		err := Executor(duplicacyPath, cmdArgs, configFile.repoDir, backupLogger)
+		err := executor(duplicacyPath, cmdArgs, configFile.repoDir, backupLogger)
 		if err != nil {
 			logError(logger, fmt.Sprint("Error executing command: ", err))
 			return err
@@ -213,7 +213,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 		if debugFlag {
 			logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 		}
-		err := Executor(duplicacyPath, cmdArgs, configFile.repoDir, copyLogger)
+		err := executor(duplicacyPath, cmdArgs, configFile.repoDir, copyLogger)
 		if err != nil {
 			logError(logger, fmt.Sprint("Error executing command: ", err))
 			return err
@@ -260,7 +260,7 @@ func performDuplicacyPrune(logger *log.Logger, testArgs []string) error {
 		if debugFlag {
 			logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 		}
-		err := Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
+		err := executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
 		if err != nil {
 			logError(logger, fmt.Sprint("Error executing command: ", err))
 			return err
@@ -296,7 +296,7 @@ func performDuplicacyCheck(logger *log.Logger, testArgs []string) error {
 		if debugFlag {
 			logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 		}
-		err := Executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
+		err := executor(duplicacyPath, cmdArgs, configFile.repoDir, anon)
 		if err != nil {
 			logError(logger, fmt.Sprint("Error executing command: ", err))
 			return err

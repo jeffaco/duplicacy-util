@@ -27,6 +27,7 @@ test:
 	go vet
 	go test
 	ineffassign .
+	golint -set_exit_status
 
 release:
 	@./build.sh

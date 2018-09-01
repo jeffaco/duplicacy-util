@@ -44,7 +44,7 @@ func TestRunExecutor(t *testing.T) {
 
 	execCommand = fakeExecCommand
 	defer func() { execCommand = exec.Command }()
-	err := Executor(duplicacyPath, []string{"-some", "-fake", "-args"}, configFile.repoDir, anon)
+	err := executor(duplicacyPath, []string{"-some", "-fake", "-args"}, configFile.repoDir, anon)
 	if err != nil {
 		t.Errorf("Expected nil error, got %#v", err)
 	}

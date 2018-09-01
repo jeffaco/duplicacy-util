@@ -218,9 +218,5 @@ func sendMailMessage(subject string, bodyHTML []string, bodyText []string) error
 	d := gomail.NewDialer(emailServerHostname, emailServerPort, emailAuthUsername, emailAuthPassword)
 
 	// Send the message
-	if err := d.DialAndSend(m); err != nil {
-		return err
-	}
-
-	return nil
+	return d.DialAndSend(m)
 }
