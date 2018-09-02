@@ -25,6 +25,29 @@ import (
 	"time"
 )
 
+type backupRevision struct {
+	storage          string
+	chunkTotalCount  string // Like: 348444
+	chunkTotalSize   string // Like: 1668G
+	filesTotalCount  string // Like: 161318
+	filesTotalSize   string // Like: 1666G
+	filesNewCount    string // Like: 373
+	filesNewSize     string // Like: 15,951M
+	chunkNewCount    string // Like: 2415
+	chunkNewSize     string // Like: 12,391M
+	chunkNewUploaded string // Like: 12,255M
+	duration         string
+}
+
+type copyRevision struct {
+	storageFrom     string
+	storageTo       string // Like: 348444
+	chunkTotalCount string // Like: 109
+	chunkCopyCount  string // Like: 3
+	chunkSkipCount  string // Like: 106
+	duration        string
+}
+
 func performBackup() error {
 	// Handle log file rotation (before any output to log file so old one doesn't get trashed)
 

@@ -54,7 +54,7 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 	v := viper.New()
 
 	// Search config in home directory with name ".duplicacy-util" (without extension).
-	v.AddConfigPath("$HOME/.duplicacy-util")
+	v.AddConfigPath(globalStorageDirectory)
 	v.SetConfigName(config.configFilename)
 
 	v.AutomaticEnv() // read in environment variables that match

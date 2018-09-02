@@ -27,33 +27,11 @@ import (
 	"github.com/theckman/go-flock"
 )
 
-type backupRevision struct {
-	storage          string
-	chunkTotalCount  string // Like: 348444
-	chunkTotalSize   string // Like: 1668G
-	filesTotalCount  string // Like: 161318
-	filesTotalSize   string // Like: 1666G
-	filesNewCount    string // Like: 373
-	filesNewSize     string // Like: 15,951M
-	chunkNewCount    string // Like: 2415
-	chunkNewSize     string // Like: 12,391M
-	chunkNewUploaded string // Like: 12,255M
-	duration         string
-}
-
-type copyRevision struct {
-	storageFrom     string
-	storageTo       string // Like: 348444
-	chunkTotalCount string // Like: 109
-	chunkCopyCount  string // Like: 3
-	chunkSkipCount  string // Like: 106
-	duration        string
-}
-
 var (
 	// Configuration file for backup operations
-	cmdConfig       string
-	cmdGlobalConfig string
+	cmdConfig       string // Name of the configuration file for repository
+	cmdGlobalConfig string // Name of the global configuration file (normally "duplicacy-util")
+	cmdStorageDir   string // Base directory for storage of global/repository/log files
 
 	// Binary options for what operations to perform
 	cmdAll    bool
@@ -83,16 +61,20 @@ var (
 
 	// Display time in local output messages?
 	loggingSystemDisplayTime = true
+
+	// Global storage directory (location where all files are stored)
+	globalStorageDirectory string
 )
 
 func init() {
 	// Perform command line argument processing
 	flag.StringVar(&cmdConfig, "f", "", "Configuration file for storage definitions (must be specified)")
+	flag.StringVar(&cmdGlobalConfig, "g", "", "Global configuration file name")
+	flag.StringVar(&cmdStorageDir, "sd", "", "Full path to storage directory for configuration/log files")
 
 	flag.BoolVar(&cmdAll, "a", false, "Perform all duplicacy operations (backup/copy, purge, check)")
 	flag.BoolVar(&cmdBackup, "b", false, "Perform duplicacy backup/copy operation")
 	flag.BoolVar(&cmdCheck, "c", false, "Perform duplicacy check operation")
-	flag.StringVar(&cmdGlobalConfig, "g", "", "Global configuration file name")
 	flag.BoolVar(&cmdPrune, "p", false, "Perform duplicacy prune operation")
 
 	flag.BoolVar(&sendMail, "m", false, "Send E-Mail with results of operations (implies quiet)")
@@ -137,6 +119,8 @@ func logMessage(logger *log.Logger, message string) {
 }
 
 func main() {
+	var err error
+
 	// Parse the command line arguments and validate results
 	flag.Parse()
 
@@ -150,8 +134,14 @@ func main() {
 		os.Exit(2)
 	}
 
+	// Determine the location of the global storage directory
+	globalStorageDirectory, err = getStorageDirectory(cmdStorageDir)
+	if err != nil {
+		os.Exit(2)
+	}
+
 	// Parse the global configuration file, if any
-	if err := loadGlobalConfig(cmdGlobalConfig); err != nil {
+	if err := loadGlobalConfig(globalStorageDirectory, cmdGlobalConfig); err != nil {
 		os.Exit(2)
 	}
 

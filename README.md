@@ -120,23 +120,38 @@ Note that the extension of configuration files can vary based on the format
 of the file. Sample configuration files are YAML files, and thus have a YAML
 extension. Change the extension if you wish to use JSON or some other format.
 
-By default, dupliacy-util stores all files in `$HOME/.duplicacy-util`. This
-can be changed via the global configuration file. Note that, in this document,
-`$HOME` refers to the users home directory (`~/` on Mac OS/X and Linux, or
-`/Users/<username>` on Windows).
+By default, dupliacy-util stores all files in its *storage directory*, which is
+`$HOME/.duplicacy-util` by default. Note that, in this document, `$HOME` refers
+to the users home directory (`~/` on Mac OS/X and Linux, or `/Users/<username>`
+on Windows).
+
+The storage directory is determined in a variety of ways:
+
+1. First and foremost, if the `-sd` parameter is specified, this will define
+the location of the storage directory, and `duplicacy-util` files will be stored
+directly in this directory. In this way, the directory where `duplicacy-util` stores
+its files could be called anything.
+
+1. If `-sd` is not specified on the command line, then the value of environment
+variable "$HOME" will be evaluated and will be used as a location to look for
+directory `.duplicacy-util`.
+
+1. If environment variable "$HOME" is unmodified (or not normally defined on your
+system), then it is expected that directory `.duplicacy-util` exists in the users
+home directory.
 
 #### Global configuration file
 
-The global configuration file is called `duplicacy-util.yaml`. We search in
-`$HOME` and `$HOME/.duplicacy-util` looking for this file.
+The global configuration file is called `duplicacy-util.yaml`, and is searched
+in the *storage directory*.
 
 The following fields are checked in the global configuration file:
 
 Field Name | Purpose | Default Value
 ---------- | ------- | -------------
 duplicacypath | Path for the [Duplicacy] binary program | "duplicacy" on your default path ($PATH)
-lockdirectory | Directory where temporary lock files are stored | $HOME/.duplicacy-util
-logdirectory | Directory where log files are stored | $HOME/.duplicacy-util/log
+lockdirectory | Directory where temporary lock files are stored | Storage directory, or $HOME/.duplicacy-util
+logdirectory | Directory where log files are stored | Storage directory, or $HOME/.duplicacy-util/log
 logfilecount | Number of historical log files that should be stored | 5
  | |
 emailFromAddress | From address (i.e. from-user@domain.com) | None
@@ -367,6 +382,8 @@ Usage of ./duplicacy-util:
   -m    Send E-Mail with results of operations (implies quiet)
   -p    Perform duplicacy prune operation
   -q    Quiet operations (generate output only in case of error)
+  -sd string
+        Full path to storage directory for configuration/log files
   -tm
         Send a test message via E-Mail
   -v    Enable verbose output

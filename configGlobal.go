@@ -21,7 +21,6 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
@@ -48,11 +47,11 @@ var (
 )
 
 // loadGlobalConfig reads in config file and ENV variables if set.
-func loadGlobalConfig(cfgFile string) error {
+func loadGlobalConfig(storageDir string, cfgFile string) error {
 	var err error
 
 	// Read in (or set) global environment variables
-	if err = setGlobalConfigVariables(cfgFile); err != nil {
+	if err = setGlobalConfigVariables(storageDir, cfgFile); err != nil {
 		return err
 	}
 
@@ -80,21 +79,13 @@ func loadGlobalConfig(cfgFile string) error {
 }
 
 // Read configuration file or set reasonable defaults if none
-func setGlobalConfigVariables(cfgFile string) error {
-	// Find home directory.
-	home, err := homedir.Dir()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error", err)
-		return err
-	}
-
+func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
 		// Search config in home directory with name "duplicacy-util" (without extension).
-		viper.AddConfigPath(home)
-		viper.AddConfigPath("$HOME/.duplicacy-util")
+		viper.AddConfigPath(storageDir)
 		viper.SetConfigName("duplicacy-util")
 	}
 
@@ -102,8 +93,8 @@ func setGlobalConfigVariables(cfgFile string) error {
 
 	// Set some defaults that we can depend on
 	duplicacyPath = "duplicacy"
-	globalLockDir = filepath.Join(home, ".duplicacy-util")
-	globalLogDir = filepath.Join(home, ".duplicacy-util", "log")
+	globalLockDir = storageDir
+	globalLogDir = filepath.Join(storageDir, "log")
 	globalLogFileCount = 5
 
 	// If a config file is found, read it in.
@@ -142,7 +133,7 @@ func setGlobalConfigVariables(cfgFile string) error {
 	emailAuthUsername = viper.GetString("emailAuthUsername")
 	emailAuthPassword = viper.GetString("emailAuthPassword")
 
-	return err
+	return nil
 }
 
 func verifyPathExists(path string) error {
