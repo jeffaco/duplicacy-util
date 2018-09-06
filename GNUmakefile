@@ -28,6 +28,7 @@ test:
 	go test
 	ineffassign .
 	golint -set_exit_status
+	gofmt -e -s -w *.go
 
 release:
 	@./build.sh
