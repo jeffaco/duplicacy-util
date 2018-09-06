@@ -248,9 +248,11 @@ func processArguments() (int, bool) {
 
 	// Basic handling for E-Mail; only honor it if it's configured
 	// (If it's not, disallow quiet operations or we won't see errors)
+	//
+	// Note that some servers do not require authentication. We'll just
+	// fail during send if authentication is required but not specified.
 	if sendMail {
-		if emailFromAddress == "" || emailToAddress == "" || emailServerHostname == "" || emailServerPort == 0 ||
-			emailAuthUsername == "" || emailAuthPassword == "" {
+		if emailFromAddress == "" || emailToAddress == "" || emailServerHostname == "" || emailServerPort == 0 {
 			quietFlag = false
 			logError(nil, "Error: Unable to send E-Mail; required fields missing from global configuration")
 			return 3, transmitMail
