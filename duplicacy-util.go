@@ -134,6 +134,12 @@ func main() {
 		os.Exit(2)
 	}
 
+	// If version number was requested, show it and exit
+	if versionFlag {
+		fmt.Printf("Version: %s, Git Hash: %s\n", versionText, gitHash)
+		os.Exit(0)
+	}
+
 	// Determine the location of the global storage directory
 	globalStorageDirectory, err = getStorageDirectory(cmdStorageDir)
 	if err != nil {
@@ -143,12 +149,6 @@ func main() {
 	// Parse the global configuration file, if any
 	if err := loadGlobalConfig(globalStorageDirectory, cmdGlobalConfig); err != nil {
 		os.Exit(2)
-	}
-
-	// If version number was requested, show it and exit
-	if versionFlag {
-		fmt.Printf("Version: %s, Git Hash: %s\n", versionText, gitHash)
-		os.Exit(0)
 	}
 
 	returnStatus, transmitMail := processArguments()
