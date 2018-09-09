@@ -148,32 +148,22 @@ func main() {
 
 	// Parse the global configuration file, if any
 	if err := loadGlobalConfig(globalStorageDirectory, cmdGlobalConfig); err != nil {
+		quietFlag = false
+		logError(nil, fmt.Sprintf("Error: %s", err))
 		os.Exit(2)
 	}
 
-	returnStatus, transmitMail := processArguments()
-
-	// Send mail if we were requested to do so
-	if transmitMail {
-		var ind = "(success)"
-		if returnStatus != 0 {
-			ind = "(FAILURE)"
-		}
-		subject := fmt.Sprintf("duplicacy-util: Backup results for configuration %s %s", cmdConfig, ind)
-
-		// Send the mail message
-		if err := sendMailMessage(subject, htmlGenerateBody(), mailBody); err != nil {
-			// If an error occurred, we can't do much about it, so just log it (forcing output)
-			quietFlag = false
-			logError(nil, fmt.Sprint("Error: ", err))
-		}
+	returnStatus, err := processArguments()
+	if err != nil {
+		// Notify all configure channels that the backup process has faile
+		notifyOfFailure()
+		logError(nil, fmt.Sprintf("Error: %s", err))
 	}
 
 	os.Exit(returnStatus)
 }
 
-func processArguments() (int, bool) {
-	var transmitMail = false
+func processArguments() (int, error) {
 
 	if cmdAll {
 		cmdBackup, cmdPrune, cmdCheck = true, true, true
@@ -187,101 +177,31 @@ func processArguments() (int, bool) {
 		quietFlag = false
 	}
 
-	// Handle request to send test E-Mail, if requested
-	if testMail {
-		cmdConfig = "test"
-
-		backupTable = []backupRevision{
-			{
-				storage:          "b2",
-				chunkTotalCount:  "149",
-				chunkTotalSize:   "870,624K",
-				filesTotalCount:  "345",
-				filesTotalSize:   "823,261K",
-				filesNewCount:    "1",
-				filesNewSize:     "7,984K",
-				chunkNewCount:    "6",
-				chunkNewSize:     "8,106K",
-				chunkNewUploaded: "3,410K",
-				duration:         "9 seconds",
-			},
-			{
-				storage:          "azure-direct",
-				chunkTotalCount:  "149",
-				chunkTotalSize:   "870,624K",
-				filesTotalCount:  "345",
-				filesTotalSize:   "823,261K",
-				filesNewCount:    "1",
-				filesNewSize:     "7,984K",
-				chunkNewCount:    "6",
-				chunkNewSize:     "8,106K",
-				chunkNewUploaded: "3,410K",
-				duration:         "2 seconds",
-			},
-		}
-
-		copyTable = []copyRevision{
-			{
-				storageFrom:     "b2",
-				storageTo:       "azure-direct",
-				chunkTotalCount: "109",
-				chunkCopyCount:  "3",
-				chunkSkipCount:  "106",
-				duration:        "9 seconds",
-			},
-		}
-
-		if err := sendMailMessage("duplicacy-util: Backup results for configuration test (success)",
-			htmlGenerateBody(),
-			[]string{"This is a test E-Mail message for a successful backup job"}); err != nil {
-			fmt.Fprintln(os.Stderr, "Error sending succcess E-Mail message:", err)
-		}
-
-		if err := sendMailMessage("duplicacy-util: Backup results for configuration test (FAILURE)",
-			htmlGenerateBody(),
-			[]string{"This is a test E-Mail message for a failed backup job"}); err != nil {
-			fmt.Fprintln(os.Stderr, "Error sending failed E-Mail message:", err)
-		}
-
-		return 1, transmitMail
+	// if no failure notifier is defined quite mode is not allowed
+	if quietFlag && hasFailureNotifier() == false {
+		quietFlag = false
+		logError(nil, "Notice: Quiet mode refused; makes no sense without sending mail")
 	}
 
-	// Basic handling for E-Mail; only honor it if it's configured
-	// (If it's not, disallow quiet operations or we won't see errors)
-	//
-	// Note that some servers do not require authentication. We'll just
-	// fail during send if authentication is required but not specified.
-	if sendMail {
-		if emailFromAddress == "" || emailToAddress == "" || emailServerHostname == "" || emailServerPort == 0 {
-			quietFlag = false
-			logError(nil, "Error: Unable to send E-Mail; required fields missing from global configuration")
-			return 3, transmitMail
-		}
-
-		transmitMail = true
-	} else {
-		if quietFlag {
-			quietFlag = false
-			logError(nil, "Notice: Quiet mode refused; makes no sense without sending mail")
-		}
+	// Handle request to send test E-Mail, if requested
+	if testMail {
+		return 1, sendTestMail()
 	}
 
 	if cmdConfig == "" {
-		logError(nil, "Error: Mandatory parameter -f is not specified (must be specified)")
-		return 2, transmitMail
+		return 2, errors.New("Mandatory parameter -f is not specified (must be specified)")
 	}
 
 	// Parse the configuration file and check for errors
 	// (Errors are printed to stderr as well as returned)
 	configFile.setConfig(cmdConfig)
 	if err := configFile.loadConfig(verboseFlag, debugFlag); err != nil {
-		return 1, transmitMail
+		return 1, nil
 	}
 
 	// Everything is loaded; make sure we hae something to do
 	if !cmdBackup && !cmdPrune && !cmdCheck {
-		logError(nil, "Error: No operations to perform (specify -b, -p, -c, or -a)")
-		return 1, transmitMail
+		return 1, errors.New("No operations to perform (specify -b, -p, -c, or -a)")
 	}
 
 	// Perform processing. Note that int is returned for two reasons:
@@ -289,25 +209,22 @@ func processArguments() (int, bool) {
 	// 2. We want defer statements to execute, so we can't use os.Exit here
 
 	logMessage(nil, fmt.Sprintf("duplicacy-util starting, version: %s, Git Hash: %s", versionText, gitHash))
-	return obtainLock(), transmitMail
+	return obtainLock()
 }
 
-func obtainLock() int {
+func obtainLock() (int, error) {
 	// Obtain a lock to make sure we don't overlap operations against a configuration
 	lockfile := filepath.Join(globalLockDir, cmdConfig+".lock")
 	fileLock := flock.NewFlock(lockfile)
 
 	locked, err := fileLock.TryLock()
 	if err != nil {
-		logError(nil, fmt.Sprint("Error: ", err))
-		return 201
+		return 201, err
 	}
 
 	if !locked {
 		// do not have exclusive lock
-		err = errors.New("unable to obtain lock using lockfile: " + lockfile)
-		logError(nil, fmt.Sprint("Error: ", err))
-		return 200
+		return 200, errors.New("Unable to obtain lock using lockfile: " + lockfile)
 	}
 
 	// flock doesn't remove the lock file when done, so let's do it ourselves
@@ -317,8 +234,8 @@ func obtainLock() int {
 
 	// Perform operations (backup or whatever)
 	if err := performBackup(); err != nil {
-		return 500
+		return 500, errors.New("Backup failed. Check the logs for details")
 	}
 
-	return 0
+	return 0, nil
 }

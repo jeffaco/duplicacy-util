@@ -68,6 +68,9 @@ func performBackup() error {
 
 	logMessage(logger, fmt.Sprint("Beginning backup on ", time.Now().Format("01-02-2006 15:04:05")))
 
+	// Notify all configure channels that the backup process has started
+	notifyOfStart()
+
 	// Perform "duplicacy backup" if required
 	if cmdBackup {
 		if err := performDuplicacyBackup(logger, []string{}); err != nil {
@@ -93,6 +96,9 @@ func performBackup() error {
 
 	logger.Println("######################################################################")
 	logMessage(logger, fmt.Sprint("Operations completed in ", getTimeDiffString(startTime, endTime)))
+
+	// Notify all configure channels that the backup process has completd
+	notifyOfSuccess()
 
 	return nil
 }
