@@ -1,0 +1,6 @@
+emailFromAddress: "Donald Duck <donald.xyzzy@gmail.com>"
+emailToAddress: "Donald Duck <donald.xyzzy@gmail.com>"
+emailServerHostname: smtp.gmail.com
+emailServerPort: 465
+emailAuthUsername: donald.xyzzy@gmail.com
+emailAuthPassword: gaozqlwbztypagwt

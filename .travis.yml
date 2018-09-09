@@ -16,5 +16,8 @@ before_install:
   - go get github.com/theckman/go-flock
   - go get gopkg.in/gomail.v2
 
+  # Duplicacy STUB
+  - sudo touch /usr/local/bin/duplicacy; sudo chmod +x /usr/local/bin/duplicacy
+
 script:
   - make test

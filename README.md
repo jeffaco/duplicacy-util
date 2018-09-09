@@ -1,29 +1,30 @@
 # duplicacy-util: Schedule and run duplicacy via CLI
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/jeffaco/duplicacy-util)](https://goreportcard.com/report/github.com/jeffaco/duplicacy-util)
 [![Build Status](https://travis-ci.org/jeffaco/duplicacy-util.svg?branch=master)](https://travis-ci.org/jeffaco/duplicacy-util)
 
-[Duplicacy]: https://github.com/gilbertchen/duplicacy
-[Viper]: https://github.com/spf13/viper
+[duplicacy]: https://github.com/gilbertchen/duplicacy
+[viper]: https://github.com/spf13/viper
 
 This repository contains utilities to run [Duplicacy][] on any platform supported by
 [Duplicacy][].
 
 Table of contents:
 
-* [What is duplicacy-util?](#what-is-duplicacy-util)
-* [Build instructions](#build-instructions)
-* [How do you configure duplicacy-util?](#how-do-you-configure-duplicacy-util)
-  * [Global configuration file](#global-configuration-file)
-  * [Local configuration file](#local-configuration-file)
-* [Command line usage](#command-line-usage)
-* [Getting started with duplicacy-util](#getting-started-with-duplicacy-util)
-* [Management of E-Mail Messages](#management-of-e-mail-messages)
-* [Scheduling duplicacy-util to run automatically](#scheduling-duplicacy-util-to-run-automatically)
-  * [Scheduling for Linux](#scheduling-for-linux)
-  * [Scheduling for Mac OS/X](#scheduling-for-mac-osx)
-  * [Scheduling for Windows](#scheduling-for-windows)
+- [What is duplicacy-util?](#what-is-duplicacy-util)
+- [Build instructions](#build-instructions)
+- [How do you configure duplicacy-util?](#how-do-you-configure-duplicacy-util)
+  - [Global configuration file](#global-configuration-file)
+  - [Local configuration file](#local-configuration-file)
+- [Command line usage](#command-line-usage)
+- [Getting started with duplicacy-util](#getting-started-with-duplicacy-util)
+- [Management of E-Mail Messages](#management-of-e-mail-messages)
+- [Scheduling duplicacy-util to run automatically](#scheduling-duplicacy-util-to-run-automatically)
+  - [Scheduling for Linux](#scheduling-for-linux)
+  - [Scheduling for Mac OS/X](#scheduling-for-mac-osx)
+  - [Scheduling for Windows](#scheduling-for-windows)
 
------
+---
 
 ### What is duplicacy-util?
 
@@ -32,36 +33,36 @@ there are a number of
 [other tools](https://github.com/gilbertchen/duplicacy/wiki/Scripts-and-utilities-index)
 available to do similar things, `duplicacy-util` has a number of advantages:
 
-* It is completely portable. It's trivial to run on Windows, Mac OS/X,
-Linux, or any other platorm supported by the Go language. You schedule
-it, and `duplicacy-util` will perform the backups. Note that [Duplicacy][]
-itself is written in Go, so if you can use [Duplicacy][], you can use
-`dupliacy-util`.
-* It is self-contained. Copy a single executable, and `duplicacy-util` is
-fully functional. It is easy to install and easy to upgrade, and you don't
-need to install packages to make it work properly.
-* It is "set and forget". I use `duplicacy-util` to send E-Mail upon completion. Then I
-run scripting on my E-Mail server (I use gmail) to move successful backups to the trash.
-This means that I can review backups at any time but, if I don't, the mail messages are
-deleted after 30 days. If any backup fails, it's left in your inbox for you to review.
-See [management of E-Mail messages](#management-of-e-mail-messages) for details.
-* It is completely configurable with configuration files. You can have one backup that
-is backed up to a single server while other backups are backed up to multiple servers.
-* It is designed to be easy on resources. For example, any number of complete logs are
-saved, but older logs are compressed to save space. Very old logs are aged out and
-deleted.
-* `duplicacy-util` won't step on itself. You can run multiple backups concurrently, but
-`duplicacy-util` will skip a backup if it's already backing up a specific repository. Thus, you
-can schedule jobs as often as you would like knowing that if a backup of a repository
-is still running, a second job won't try to back up the same data again.
+- It is completely portable. It's trivial to run on Windows, Mac OS/X,
+  Linux, or any other platorm supported by the Go language. You schedule
+  it, and `duplicacy-util` will perform the backups. Note that [Duplicacy][]
+  itself is written in Go, so if you can use [Duplicacy][], you can use
+  `dupliacy-util`.
+- It is self-contained. Copy a single executable, and `duplicacy-util` is
+  fully functional. It is easy to install and easy to upgrade, and you don't
+  need to install packages to make it work properly.
+- It is "set and forget". I use `duplicacy-util` to send E-Mail upon completion. Then I
+  run scripting on my E-Mail server (I use gmail) to move successful backups to the trash.
+  This means that I can review backups at any time but, if I don't, the mail messages are
+  deleted after 30 days. If any backup fails, it's left in your inbox for you to review.
+  See [management of E-Mail messages](#management-of-e-mail-messages) for details.
+- It is completely configurable with configuration files. You can have one backup that
+  is backed up to a single server while other backups are backed up to multiple servers.
+- It is designed to be easy on resources. For example, any number of complete logs are
+  saved, but older logs are compressed to save space. Very old logs are aged out and
+  deleted.
+- `duplicacy-util` won't step on itself. You can run multiple backups concurrently, but
+  `duplicacy-util` will skip a backup if it's already backing up a specific repository. Thus, you
+  can schedule jobs as often as you would like knowing that if a backup of a repository
+  is still running, a second job won't try to back up the same data again.
 
 Note that `duplicacy-util` is a work in progress. The short term to-do list includes:
 
-* Create a checkpoint mechnanism. If [Duplicacy][] fails for whatever reason, then
-`duplicacy-util` should resume the backup where it left off, even if you back up to
-many different storages.
-* While designed for my usage, I would very much like feedback to see what others would
-like. If a new feature makes sense, I'm happy to add it.
+- Create a checkpoint mechnanism. If [Duplicacy][] fails for whatever reason, then
+  `duplicacy-util` should resume the backup where it left off, even if you back up to
+  many different storages.
+- While designed for my usage, I would very much like feedback to see what others would
+  like. If a new feature makes sense, I'm happy to add it.
 
 ### Build Instructions
 
@@ -77,7 +78,7 @@ to get dependencies:
 
 ```shell
 go get github.com/djherbis/times
-go get github.com/mitchellh/go-homedir       
+go get github.com/mitchellh/go-homedir
 go get github.com/spf13/viper
 go get github.com/theckman/go-flock
 go get gopkg.in/gomail.v2
@@ -105,8 +106,8 @@ Mac OS/X or Linux, or `duplicacy-util.exe` for Windows).
 
 `duplicacy-util` works off of two (or more) configuration files:
 
-* A global configuration file (that controls common settings), and
-* A repository-specific file to control how the repository should be backed up.
+- A global configuration file (that controls common settings), and
+- A repository-specific file to control how the repository should be backed up.
 
 You can have multiple repository-specific configuration files (if you have
 many repositories to back up).
@@ -120,66 +121,90 @@ Note that the extension of configuration files can vary based on the format
 of the file. Sample configuration files are YAML files, and thus have a YAML
 extension. Change the extension if you wish to use JSON or some other format.
 
-By default, dupliacy-util stores all files in its *storage directory*, which is
+By default, dupliacy-util stores all files in its _storage directory_, which is
 `$HOME/.duplicacy-util` by default. Note that, in this document, `$HOME` refers
 to the users home directory (`~/` on Mac OS/X and Linux, or `/Users/<username>`
 on Windows).
 
 The storage directory is determined in a variety of ways:
 
-1. First and foremost, if the `-sd` parameter is specified, this will define
-the location of the storage directory, and `duplicacy-util` files will be stored
-directly in this directory. In this way, the directory where `duplicacy-util` stores
-its files could be called anything.
+1.  First and foremost, if the `-sd` parameter is specified, this will define
+    the location of the storage directory, and `duplicacy-util` files will be stored
+    directly in this directory. In this way, the directory where `duplicacy-util` stores
+    its files could be called anything.
 
-1. If `-sd` is not specified on the command line, then the value of environment
-variable "$HOME" will be evaluated and will be used as a location to look for
-directory `.duplicacy-util`.
+1.  If `-sd` is not specified on the command line, then the value of environment
+    variable "$HOME" will be evaluated and will be used as a location to look for
+    directory `.duplicacy-util`.
 
-1. If environment variable "$HOME" is unmodified (or not normally defined on your
-system), then it is expected that directory `.duplicacy-util` exists in the users
-home directory.
+1.  If environment variable "$HOME" is unmodified (or not normally defined on your
+    system), then it is expected that directory `.duplicacy-util` exists in the users
+    home directory.
 
 #### Global configuration file
 
 The global configuration file is called `duplicacy-util.yaml`, and is searched
-in the *storage directory*.
+in the _storage directory_.
 
 The following fields are checked in the global configuration file:
 
-Field Name | Purpose | Default Value
----------- | ------- | -------------
-duplicacypath | Path for the [Duplicacy] binary program | "duplicacy" on your default path ($PATH)
-lockdirectory | Directory where temporary lock files are stored | Storage directory, or $HOME/.duplicacy-util
-logdirectory | Directory where log files are stored | Storage directory, or $HOME/.duplicacy-util/log
-logfilecount | Number of historical log files that should be stored | 5
- | |
-emailFromAddress | From address (i.e. from-user@domain.com) | None
-emailToAddress | To address (i.e. to-user@domain.com) | None
-emailServerHostname | SMTP server (i.e. smtp@gmail.com) | None
-emailServerPort | Port of SMTP server (i.e. 465 or 587) | None
-emailAuthUsername | Username for authentication with SMTP server | None
-emailAuthPassword | Password for authentication with SMTP server | None
+| Field Name          | Purpose                                              | Default Value                                   |
+| ------------------- | ---------------------------------------------------- | ----------------------------------------------- |
+| duplicacypath       | Path for the [Duplicacy] binary program              | "duplicacy" on your default path ($PATH)        |
+| lockdirectory       | Directory where temporary lock files are stored      | Storage directory, or $HOME/.duplicacy-util     |
+| logdirectory        | Directory where log files are stored                 | Storage directory, or $HOME/.duplicacy-util/log |
+| logfilecount        | Number of historical log files that should be stored | 5                                               |
 
-A sample global configuration file is stored in `~/.duplicacy-util/duplicacy-util.yaml`,
-and contains the following:
+#### Notifications
+`Duplicacy-util` supports notifying you when backups succeed, fail and start. Unless
+you're planning to only be running `dupliacy-util` interactively, it's strongly recommended
+to configure notifications.  By default `dupliacy-util` notifies you on success and failure
+which is equal to the following example configuration:
+```
+notifications:
+  onSuccess: ['email']
+  onFailure: ['email']
+  onStart: []
+```
+The above config has support for multipe notification channels, but currently only
+email notifications are supported. To following section describes how to setup 
+email notifications.
+
+##### Email notifications
+
+| Field Name          | Purpose                                              |
+| ------------------- | ---------------------------------------------------- |
+| fromAddress         | From address (i.e. from-user@domain.com)             |
+| toAddress           | To address (i.e. to-user@domain.com)                 |
+| serverHostname      | SMTP server (i.e. smtp@gmail.com)                    |
+| serverPort          | Port of SMTP server (i.e. 465 or 587)                |
+| authUsername        | Username for authentication with SMTP server         |
+| authPassword        | Password for authentication with SMTP server         |
+
+Example configuration:
 
 ```
-duplicacypath: /Users/Jeff/Applications/duplicacy
-
-emailFromAddress: "Donald Duck <donald.xyzzy@gmail.com>"
-emailToAddress: "Donald Duck <donald.xyzzy@gmail.com>"
-emailServerHostname: smtp.gmail.com
-emailServerPort: 465
-emailAuthUsername: donald.xyzzy@gmail.com
-emailAuthPassword: gaozqlwbztypagwt
+email:
+  fromAddress: "Donald Duck &lt;donald.xyzzy@gmail.com&gt;"
+  toAddress: "Donald Duck &lt;donald.xyzzy@gmail.com>&gt;"
+  serverHostname: smtp.gmail.com
+  serverPort: 465
+  authUsername: donald.xyzzy@gmail.com
+  authPassword: gaozqlwbztypagwt
 ```
 
-If you want E-Mail capabilities (and you almost certainly do unless
-you're planning on only running `duplicacy-util` interactively), you
-must define prefixes starting with `email` in the list above. For
-E-Mail configuration hints, see
-[Management of E-Mail Messages](#management-of-e-mail-messages).
+E-Mail subjects from `duplicacy-util` will be of the following format:
+
+| Notification    | Subject Line                                                               |
+| --------------- | -------------------------------------------------------------------------- |
+| Success         | `duplicacy-util: Backup results for configuration <config-name> (success)` |
+| Failure         | `duplicacy-util: Backup results for configuration <config-name> (FAILURE)` |
+| Start           | `duplicacy-util: Backup started for configuration <config-name>`           |
+
+You can filter on the subject line to direct the E-Mail appropriately
+to a folder of your choice.
+See [Management of E-Mail Messages](#management-of-e-mail-messages), for E-Mail configuration hints.
+
 
 #### Local configuration file
 
@@ -209,13 +234,13 @@ check:
 
 This configuration shows that:
 
-* You have a repository, stored in /Volumes/Quicken,
-* That is backed up to storage named `b2`,
-* You should prune storage `b2` with `0:365 30:180 7:30 1:7`. See
-[prune documentation](https://github.com/gilbertchen/duplicacy/wiki/prune)
-for more information on how to specify `keep` tag.
-* When doing a `check` operation, you should check revisions in storage
-`b2`.
+- You have a repository, stored in /Volumes/Quicken,
+- That is backed up to storage named `b2`,
+- You should prune storage `b2` with `0:365 30:180 7:30 1:7`. See
+  [prune documentation](https://github.com/gilbertchen/duplicacy/wiki/prune)
+  for more information on how to specify `keep` tag.
+- When doing a `check` operation, you should check revisions in storage
+  `b2`.
 
 You might wonder why the same storage is specified multiple times. This is
 evident if you back up to multiple cloud providers.
@@ -270,18 +295,18 @@ and check each storage for consistency.
 A repository configuration file consists of a few repository-wide settings
 and sections that define operations. The repository-wide settings are:
 
-Field Name | Purpose | Default Value
----------- | ------- | -------------
-repository | Location of the repository to back up | None
+| Field Name | Purpose                               | Default Value |
+| ---------- | ------------------------------------- | ------------- |
+| repository | Location of the repository to back up | None          |
 
 Sections in the repository configuration files consist of:
 
-Section Name | Purpose
------------- | -------
-storage | Storage names to back up for [duplicacy backup](https://github.com/gilbertchen/duplicacy/wiki/backup) operations*
-copy | List of storage from-to pairs for [duplicacy copy](https://github.com/gilbertchen/duplicacy/wiki/copy) operations
-prune | List of storage names to prune for [duplicacy prune](https://github.com/gilbertchen/duplicacy/wiki/prune) operations*
-check | List of storage names to check for [duplicacy check](https://github.com/gilbertchen/duplicacy/wiki/check) operations*
+| Section Name | Purpose                                                                                                                |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| storage      | Storage names to back up for [duplicacy backup](https://github.com/gilbertchen/duplicacy/wiki/backup) operations\*     |
+| copy         | List of storage from-to pairs for [duplicacy copy](https://github.com/gilbertchen/duplicacy/wiki/copy) operations      |
+| prune        | List of storage names to prune for [duplicacy prune](https://github.com/gilbertchen/duplicacy/wiki/prune) operations\* |
+| check        | List of storage names to check for [duplicacy check](https://github.com/gilbertchen/duplicacy/wiki/check) operations\* |
 
 Note that `*` denotes that this section is mandatory and MUST be specified
 in the configuration file.
@@ -294,34 +319,34 @@ configuration file.
 
 Fields in the `storage` section are:
 
-Field Name | Purpose | Required | Default Value
----------- | ------- | -------- | -------------
-name | Storage name to back up | Yes | None
-threads | Number of threads to use for backup | No | 1
-vss | Enable Volume Shadow Copy service | No | false
-vssTimeout  | the timeout in seconds to wait for the Volume Shadow Copy operation to complete  | No  |  None
+| Field Name | Purpose                                                                         | Required | Default Value |
+| ---------- | ------------------------------------------------------------------------------- | -------- | ------------- |
+| name       | Storage name to back up                                                         | Yes      | None          |
+| threads    | Number of threads to use for backup                                             | No       | 1             |
+| vss        | Enable Volume Shadow Copy service                                               | No       | false         |
+| vssTimeout | the timeout in seconds to wait for the Volume Shadow Copy operation to complete | No       | None          |
 
 Fields in the `copy` section (if one exists), are:
 
-Field Name | Purpose | Required | Default Value
----------- | ------- | -------- | -------------
-from | Storage name to copy from | Yes | None
-to | Storage name to copy to | Yes | None
-threads | Number of threads to use for copy | No | 1
+| Field Name | Purpose                           | Required | Default Value |
+| ---------- | --------------------------------- | -------- | ------------- |
+| from       | Storage name to copy from         | Yes      | None          |
+| to         | Storage name to copy to           | Yes      | None          |
+| threads    | Number of threads to use for copy | No       | 1             |
 
 Fields in the `prune` section are:
 
-Field Name | Purpose | Required | Default Value
----------- | ------- | -------- | -------------
-storage | Storage name to prune | Yes | None
-keep | [Retention specification](https://github.com/gilbertchen/duplicacy/wiki/prune) | Yes | None
+| Field Name | Purpose                                                                        | Required | Default Value |
+| ---------- | ------------------------------------------------------------------------------ | -------- | ------------- |
+| storage    | Storage name to prune                                                          | Yes      | None          |
+| keep       | [Retention specification](https://github.com/gilbertchen/duplicacy/wiki/prune) | Yes      | None          |
 
 Finally, fields in the `check` section are:
 
-Field Name | Purpose | Required | Default Value
----------- | ------- | -------- | -------------
-storage | Storage name to check | Yes | None
-all | Should all revisions be checked | No | false
+| Field Name | Purpose                         | Required | Default Value |
+| ---------- | ------------------------------- | -------- | ------------- |
+| storage    | Storage name to check           | Yes      | None          |
+| all        | Should all revisions be checked | No       | false         |
 
 Once you have the configuration files set up, running `duplicacy-util` is
 simple. Just use a command like:
@@ -393,26 +418,16 @@ Usage of ./duplicacy-util:
 
 Exit codes from `duplicacy-util` are as follows:
 
-Exit Code/Range | Meaning
---------------- | -------
-0 | Success
-1-2 | Command line errors
-200-201 | Run skipped due to existing job already running
-500 | Operation from `duplicacy` command failed
+| Exit Code/Range | Meaning                                         |
+| --------------- | ----------------------------------------------- |
+| 0               | Success                                         |
+| 1-2             | Command line errors                             |
+| 200-201         | Run skipped due to existing job already running |
+| 500             | Operation from `duplicacy` command failed       |
 
-In the event of an error, an E-Mail will be generated with details of the
-error. Note that 200-201 operations are not considered fatal from an E-Mail
+In the event of an error, a notification will be sent with details of the
+error. Note that 200-201 operations are not considered fatal from an notification
 perspective, but the fact that the backup was skipped is indicated.
-
-E-Mail subjects from `duplicacy-util` will be of the following format:
-
-Success/Failure | Subject Line
---------------- | ------------
-Success | `duplicacy-util: Backup results for configuration <config-name> (success)`
-Failure | `duplicacy-util: Backup results for configuration <config-name> (FAILURE)`
-
-You can filter on the subject line to direct the E-Mail appropriately
-to a folder of your choice.
 
 ### Getting started with duplicacy-util
 
@@ -445,30 +460,19 @@ You should study the [Duplicacy Wiki](https://github.com/gilbertchen/duplicacy/w
 carefully, the documentation is quite good. It explains how [Duplicacy][] works
 and various commands that [Duplicacy][] supports.
 
-
 ### Management of E-Mail Messages
-
-To send E-Mail, you must run `duplicacy-util` with the `-m`
-qualifier, and you must define a number of fields in the global
-configuration file. These fields depend on what E-Mail server
-you are using. I use Google's
-[gmail](https://en.wikipedia.org/wiki/Gmail)
-service, and will define my usage here.
 
 **NOTE: This discussion is specific to Gmail, but if you are using a
 different mail server, you can almost certainly use these ideas in your
 specific scenerio.**
 
-Settings in `$HOME/.duplicacy-util/duplicacy-util.yaml`:
+In order to send E-Mail notifications, you must first have configured a 
+number of fields in the [Global configuration file](#global-configuration-file).
+These fields depend on what E-Mail server
+you are using. I use Google's
+[gmail](https://en.wikipedia.org/wiki/Gmail)
+service, and will define my usage here.
 
-Setting | Suggested value
-------- | ---------------
-emailFromAddress | Your Gmail address (i.e. jeff@gmail.com)
-emailToAdress | Your Gmail address (i.e. jeff@gmail.com)
-emailServerHostname | smtp.gmail.com
-emailServerPort | 465
-emailAuthUsername | Your Gmail address (i.e. jeff@gmail.com)
-emailAuthPassword | Your application specific generated password
 
 It is recommended that you use an application specific generated
 password that can be generated in the
@@ -588,12 +592,12 @@ your saved crontab entries from your private `crontab` file.
 
 #### Scheduling for Mac OS/X
 
-On recent versions of Mac OS/X (*macOS High Sierra* as of the time of
+On recent versions of Mac OS/X (_macOS High Sierra_ as of the time of
 this writing), [cron](https://en.wikipedia.org/wiki/Cron) ships with
 Mac OS/X. So that is an option.
 
 [launchd]: https://developer.apple.com/library/content/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/ScheduledJobs.html
-[Lingon]: https://www.peterborgapps.com/lingon/
+[lingon]: https://www.peterborgapps.com/lingon/
 
 However, on Mac OS/X, the preferred way to add a timed job is to use
 [launchd][]. Each [launchd][] job is described by a separate file.
@@ -602,11 +606,11 @@ or removing a file.
 
 There are two ways to create these files:
 
-1. By hand; the file format is documented in [launchd][] documentation, or
-1. By using an automated tool. [Lingon][] is one such tool that makes
-the job of creating [launchd][] files very simple. While [Lingon][] is
-commercial, it's very inexpensive. I created the `quicken` job in
-seconds using [Lingon][]:
+1.  By hand; the file format is documented in [launchd][] documentation, or
+1.  By using an automated tool. [Lingon][] is one such tool that makes
+    the job of creating [launchd][] files very simple. While [Lingon][] is
+    commercial, it's very inexpensive. I created the `quicken` job in
+    seconds using [Lingon][]:
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
@@ -655,8 +659,7 @@ at 3:00 PM, mailing the results of the backup job.
 
 #### Scheduling for Windows
 
-Windows includes a build-in rich scheduler called the `Windows Task
-Scheduler`. The `Windows Task Scheduler` is a GUI (graphical) program
+Windows includes a build-in rich scheduler called the `Windows Task Scheduler`. The `Windows Task Scheduler` is a GUI (graphical) program
 designed to make scheduling of repetitive tasks easy to perform.
 
 You can find help in numerous forms with a

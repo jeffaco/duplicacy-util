@@ -213,10 +213,77 @@ func sendMailMessage(subject string, bodyHTML []string, bodyText []string) error
 	m.SetHeader("To", emailToAddress)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text", strings.Join(bodyText, "\r\n"))
-	m.AddAlternative("text/html", strings.Join(bodyHTML, "\r\n"))
+	if len(bodyHTML) != 0 {
+		m.AddAlternative("text/html", strings.Join(bodyHTML, "\r\n"))
+	}
 
 	d := gomail.NewDialer(emailServerHostname, emailServerPort, emailAuthUsername, emailAuthPassword)
 
 	// Send the message
 	return d.DialAndSend(m)
+}
+
+func sendTestMail() error {
+
+	// TODO: this is temp workaround to check if email is configured
+	_, err := NewEmailNotifier()
+	if err != nil {
+		return err
+	}
+
+	cmdConfig = "test"
+
+	backupTable = []backupRevision{
+		{
+			storage:          "b2",
+			chunkTotalCount:  "149",
+			chunkTotalSize:   "870,624K",
+			filesTotalCount:  "345",
+			filesTotalSize:   "823,261K",
+			filesNewCount:    "1",
+			filesNewSize:     "7,984K",
+			chunkNewCount:    "6",
+			chunkNewSize:     "8,106K",
+			chunkNewUploaded: "3,410K",
+			duration:         "9 seconds",
+		},
+		{
+			storage:          "azure-direct",
+			chunkTotalCount:  "149",
+			chunkTotalSize:   "870,624K",
+			filesTotalCount:  "345",
+			filesTotalSize:   "823,261K",
+			filesNewCount:    "1",
+			filesNewSize:     "7,984K",
+			chunkNewCount:    "6",
+			chunkNewSize:     "8,106K",
+			chunkNewUploaded: "3,410K",
+			duration:         "2 seconds",
+		},
+	}
+
+	copyTable = []copyRevision{
+		{
+			storageFrom:     "b2",
+			storageTo:       "azure-direct",
+			chunkTotalCount: "109",
+			chunkCopyCount:  "3",
+			chunkSkipCount:  "106",
+			duration:        "9 seconds",
+		},
+	}
+
+	if err := sendMailMessage("duplicacy-util: Backup results for configuration test (success)",
+		htmlGenerateBody(),
+		[]string{"This is a test E-Mail message for a successful backup job"}); err != nil {
+		return err
+	}
+
+	if err := sendMailMessage("duplicacy-util: Backup results for configuration test (FAILURE)",
+		htmlGenerateBody(),
+		[]string{"This is a test E-Mail message for a failed backup job"}); err != nil {
+		return err
+	}
+
+	return nil
 }
