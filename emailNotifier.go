@@ -36,6 +36,10 @@ func NewEmailNotifier() (EmailNotifier, error) {
 		return notifier, errors.New("Invalid E-mail configuration; Required fields missing")
 	}
 
+	if usesNewConfigStyle == false {
+		logMessage(nil, "Warning: E-Mail configuration in old format, update global configuration file")
+	}
+
 	return notifier, nil
 }
 
