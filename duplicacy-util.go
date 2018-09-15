@@ -39,8 +39,8 @@ var (
 	cmdCheck  bool
 	cmdPrune  bool
 
-	sendMail bool
-	testMail bool
+	sendMail              bool
+	testNotificationsFlag bool
 
 	debugFlag   bool
 	quietFlag   bool
@@ -78,7 +78,8 @@ func init() {
 	flag.BoolVar(&cmdPrune, "p", false, "Perform duplicacy prune operation")
 
 	flag.BoolVar(&sendMail, "m", false, "Send E-Mail with results of operations (implies quiet)")
-	flag.BoolVar(&testMail, "tm", false, "Send a test message via E-Mail")
+	flag.BoolVar(&testNotificationsFlag, "tm", false, "(Deprecated: Use -tn instead) Send a test message via E-Mail")
+	flag.BoolVar(&testNotificationsFlag, "tn", false, "Test notifications")
 
 	flag.BoolVar(&debugFlag, "d", false, "Enable debug output (implies verbose)")
 	flag.BoolVar(&quietFlag, "q", false, "Quiet operations (generate output only in case of error)")
@@ -183,9 +184,9 @@ func processArguments() (int, error) {
 		logError(nil, "Notice: Quiet mode refused; makes no sense without sending mail")
 	}
 
-	// Handle request to send test E-Mail, if requested
-	if testMail {
-		return 1, sendTestMail()
+	// Handle request to test Notifications, if requested
+	if testNotificationsFlag {
+		return 1, testNotifications()
 	}
 
 	if cmdConfig == "" {
