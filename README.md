@@ -158,17 +158,16 @@ The following fields are checked in the global configuration file:
 #### Notifications
 `Duplicacy-util` supports notifying you when backups succeed, fail and start. Unless
 you're planning to only be running `dupliacy-util` interactively, it's strongly recommended
-to configure notifications.  By default `dupliacy-util` notifies you on success and failure
-which is equal to the following example configuration:
+to configure notifications. 
+For now only email notifications are supported, but more notification channels
+are on it's way. The following config snippet shows how to subscribe to specific
+notifications:
 ```
 notifications:
   onSuccess: ['email']
   onFailure: ['email']
   onStart: []
 ```
-The above config has support for multipe notification channels, but currently only
-email notifications are supported. To following section describes how to setup 
-email notifications.
 
 ##### Email notifications
 
@@ -181,12 +180,17 @@ email notifications.
 | authUsername        | Username for authentication with SMTP server         |
 | authPassword        | Password for authentication with SMTP server         |
 
-Example configuration:
+Here is an example how to setup email notifications:
 
 ```
+notifications:
+  onSuccess: ['email']
+  onFailure: ['email']
+  onStart: []
+
 email:
-  fromAddress: "Donald Duck &lt;donald.xyzzy@gmail.com&gt;"
-  toAddress: "Donald Duck &lt;donald.xyzzy@gmail.com>&gt;"
+  fromAddress: "Donald Duck <donald.xyzzy@gmail.com>"
+  toAddress: "Donald Duck <donald.xyzzy@gmail.com>"
   serverHostname: smtp.gmail.com
   serverPort: 465
   authUsername: donald.xyzzy@gmail.com
@@ -404,7 +408,7 @@ Usage of ./duplicacy-util:
     	Configuration file for storage definitions (must be specified)
   -g string
     	Global configuration file name
-  -m	Send E-Mail with results of operations (implies quiet)
+  -m	(Deprecated) Send E-Mail with results of operations (implies quiet)
   -p	Perform duplicacy prune operation
   -q	Quiet operations (generate output only in case of error)
   -sd string

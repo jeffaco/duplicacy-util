@@ -40,6 +40,7 @@ var (
 	cmdPrune  bool
 
 	sendMail              bool
+	testMailFlag          bool
 	testNotificationsFlag bool
 
 	debugFlag   bool
@@ -77,8 +78,8 @@ func init() {
 	flag.BoolVar(&cmdCheck, "c", false, "Perform duplicacy check operation")
 	flag.BoolVar(&cmdPrune, "p", false, "Perform duplicacy prune operation")
 
-	flag.BoolVar(&sendMail, "m", false, "Send E-Mail with results of operations (implies quiet)")
-	flag.BoolVar(&testNotificationsFlag, "tm", false, "(Deprecated: Use -tn instead) Send a test message via E-Mail")
+	flag.BoolVar(&sendMail, "m", false, "(Deprecated) Send E-Mail with results of operations (implies quiet)")
+	flag.BoolVar(&testMailFlag, "tm", false, "(Deprecated: Use -tn instead) Send a test message via E-Mail")
 	flag.BoolVar(&testNotificationsFlag, "tn", false, "Test notifications")
 
 	flag.BoolVar(&debugFlag, "d", false, "Enable debug output (implies verbose)")
@@ -156,9 +157,9 @@ func main() {
 
 	returnStatus, err := processArguments()
 	if err != nil {
-		// Notify all configure channels that the backup process has faile
-		notifyOfFailure()
+		// Notify that the backup process has failed
 		logError(nil, fmt.Sprintf("Error: %s", err))
+		notifyOfFailure()
 	}
 
 	os.Exit(returnStatus)
@@ -178,14 +179,15 @@ func processArguments() (int, error) {
 		quietFlag = false
 	}
 
-	// if no failure notifier is defined quite mode is not allowed
+	// if no failure notifier is defined quiet mode is not allowed
 	if quietFlag && hasFailureNotifier() == false {
 		quietFlag = false
-		logError(nil, "Notice: Quiet mode refused; makes no sense without sending mail")
+		logError(nil, "Notice: Quiet mode refused; a failure notifier should be configured")
 	}
 
-	// Handle request to test Notifications, if requested
-	if testNotificationsFlag {
+	// Handle request to test Notifications
+	// if testmailFlag is set; only email notifications will be tested
+	if testNotificationsFlag || testMailFlag {
 		return 1, testNotifications()
 	}
 
