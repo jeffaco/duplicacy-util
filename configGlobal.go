@@ -105,6 +105,9 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 			return err
 		case viper.ConfigFileNotFoundError:
 			// No configuration file is okay unless we specifically asked for a named file
+			if sendMail || testMailFlag {
+				return errors.New("No global config found: Can't use -m or -tm flags")
+			}
 			if cfgFile != "" {
 				return err
 			}
@@ -130,12 +133,11 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 		globalLogFileCount = configInt
 	}
 
-	// Try to set default notifiers if non are defined in the config
-	if viper.IsSet("notifications") == false {
+	// Support for deprecated -m flag until it gets removed
+	if sendMail || testMailFlag {
 		defaultNotifier, err := NewEmailNotifier()
 		if err != nil {
-			// No email configuration found
-			return nil
+			return err
 		}
 		onFailureNotifiers = append(onFailureNotifiers, defaultNotifier)
 		onStartNotifiers = append(onStartNotifiers, defaultNotifier)

@@ -97,6 +97,14 @@ func TestSendMailFlagWithInvalidEmailConfig(t *testing.T) {
 	}
 }
 
+func TestSendMailFlagWithNoConfig(t *testing.T) {
+	sendMail = true
+	err := loadGlobalConfig(".", "")
+	if err == nil {
+		t.Error("Invalid E-main configuration error should have been returned")
+	}
+}
+
 func TestSendMailFlagWithValidEmailConfig(t *testing.T) {
 	sendMail = true
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/fullValidConfig.yml")
