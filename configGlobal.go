@@ -173,7 +173,9 @@ func configureNotificationChannel(channels []string, notificationType string) ([
 			if err != nil {
 				return nil, err
 			}
-			notifiers = append(notifiers, emailNotifier)
+			if isUniqueNotifier(emailNotifier, notifiers) {
+				notifiers = append(notifiers, emailNotifier)
+			}
 			continue
 		}
 		// Return error if invalid notification channel is provided
@@ -194,4 +196,14 @@ func verifyPathExists(path string) error {
 
 func hasFailureNotifier() bool {
 	return len(onFailureNotifiers) > 0
+}
+
+// Checks (by type) if notifier is unique
+func isUniqueNotifier(notifier Notifier, collection []Notifier) bool {
+	for _, existing := range collection {
+		if notifier.(Notifier) == existing.(Notifier) {
+			return false
+		}
+	}
+	return true
 }
