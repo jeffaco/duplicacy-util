@@ -396,24 +396,26 @@ This will generate output similar to:
 
 ```text
 Usage of ./duplicacy-util:
-  -a    Perform all duplicacy operations (backup/copy, purge, check)
-  -b    Perform duplicacy backup/copy operation
-  -c    Perform duplicacy check operation
-  -d    Enable debug output (implies verbose)
+  -a	Perform all duplicacy operations (backup/copy, purge, check)
+  -b	Perform duplicacy backup/copy operation
+  -c	Perform duplicacy check operation
+  -d	Enable debug output (implies verbose)
   -f string
-        Configuration file for storage definitions (must be specified)
+    	Configuration file for storage definitions (must be specified)
   -g string
-        Global configuration file name
-  -m    Send E-Mail with results of operations (implies quiet)
-  -p    Perform duplicacy prune operation
-  -q    Quiet operations (generate output only in case of error)
+    	Global configuration file name
+  -m	Send E-Mail with results of operations (implies quiet)
+  -p	Perform duplicacy prune operation
+  -q	Quiet operations (generate output only in case of error)
   -sd string
-        Full path to storage directory for configuration/log files
+    	Full path to storage directory for configuration/log files
   -tm
-        Send a test message via E-Mail
-  -v    Enable verbose output
+    	(Deprecated: Use -tn instead) Send a test message via E-Mail
+  -tn
+    	Test notifications
+  -v	Enable verbose output
   -version
-        Display version number
+    	Display version number
 ```
 
 Exit codes from `duplicacy-util` are as follows:
@@ -483,8 +485,8 @@ file is not encrypted at this time. On a shared system, you should set
 permissions of this file appropriately.
 
 Once you set up the E-Mail configuration appropriately, you can test it
-with a command like: `./duplicacy-util -tm`. This will trigger two E-Mail
-messages to be generated: one "success" message and one "failure" message.
+with a command like: `./duplicacy-util -tn`. This will trigger 
+notifications for all configured notification channels (e.g E-Mail).
 
 It's recommended that you use Gmail filtering so that failed backups
 are visable in your `inbox` while successful backups are set aside for

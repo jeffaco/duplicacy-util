@@ -132,8 +132,8 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 			// No email configuration found
 			return nil
 		}
+		onSuccessNotifiers = append(onSuccessNotifiers, defaultNotifier)
 		onFailureNotifiers = append(onFailureNotifiers, defaultNotifier)
-		onStartNotifiers = append(onStartNotifiers, defaultNotifier)
 		return nil
 	}
 
