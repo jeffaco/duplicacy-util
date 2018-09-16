@@ -13,6 +13,13 @@ func TestValidConfig(t *testing.T) {
 	}
 }
 
+func TestConfigForParsingErrors(t *testing.T) {
+	err := loadGlobalConfig(".", "test/assets/globalConfigs/corruptedConfig.yml")
+	if err == nil {
+		t.Error("Parsing error should have been returned")
+	}
+}
+
 func TestInvalidDuplicacyPath(t *testing.T) {
 	os.Setenv("DUPLICACYPATH", "/no/such/path")
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/emptyConfig.yml")

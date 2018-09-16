@@ -100,11 +100,16 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
-		// No configuration file is okay unless we specifically asked for a named file
-		if cfgFile != "" {
+		switch err.(type) {
+		default:
 			return err
+		case viper.ConfigFileNotFoundError:
+			// No configuration file is okay unless we specifically asked for a named file
+			if cfgFile != "" {
+				return err
+			}
+			return nil
 		}
-		return nil
 	}
 
 	logMessage(nil, fmt.Sprint("Using global config: ", viper.ConfigFileUsed()))
