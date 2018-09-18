@@ -1,0 +1,13 @@
+duplicacypath: /usr/local/bin/duplicacy
+notifications:
+  onSuccess: ['email' # <-- Corruption is here
+  onFailure: ['email']
+  onStart: []
+
+email:
+  fromAddress: "Donald Duck <donald.xyzzy@gmail.com>"
+  toAddress: "Donald Duck <donald.xyzzy@gmail.com>"
+  serverHostname: smtp.gmail.com
+  serverPort: 465
+  authUsername: donald.xyzzy@gmail.com
+  authPassword: gaozqlwbztypagwt

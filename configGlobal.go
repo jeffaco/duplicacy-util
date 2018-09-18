@@ -37,13 +37,10 @@ var (
 	// Number of log files to retain
 	globalLogFileCount int
 
-	// Fields to support E-Mail
-	emailFromAddress    string
-	emailToAddress      string
-	emailServerHostname string
-	emailServerPort     int
-	emailAuthUsername   string
-	emailAuthPassword   string
+	// Notification publishers
+	onSuccessNotifiers []Notifier
+	onFailureNotifiers []Notifier
+	onStartNotifiers   []Notifier
 )
 
 // loadGlobalConfig reads in config file and ENV variables if set.
@@ -55,9 +52,12 @@ func loadGlobalConfig(storageDir string, cfgFile string) error {
 		return err
 	}
 
+	//
 	// Validate global environment variables
-	if _, err = exec.LookPath(duplicacyPath); err != nil {
-		fmt.Fprintln(os.Stderr, "Error:", err)
+	//
+
+	// Don't validate path when running unit tests (invalid path is okay for testing)
+	if _, err = exec.LookPath(duplicacyPath); err != nil && !runningUnitTests {
 		return err
 	}
 
@@ -80,6 +80,8 @@ func loadGlobalConfig(storageDir string, cfgFile string) error {
 
 // Read configuration file or set reasonable defaults if none
 func setGlobalConfigVariables(storageDir string, cfgFile string) error {
+	// Reset config to prevent invalid state in case it's called multiple times
+	viper.Reset()
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -96,15 +98,25 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 	globalLockDir = storageDir
 	globalLogDir = filepath.Join(storageDir, "log")
 	globalLogFileCount = 5
+	onSuccessNotifiers = []Notifier{}
+	onFailureNotifiers = []Notifier{}
+	onStartNotifiers = []Notifier{}
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
-		// No configuration file is okay unless we specifically asked for a named file
-		if cfgFile != "" {
-			fmt.Fprintln(os.Stdout, "Error:", err)
+		switch err.(type) {
+		default:
 			return err
+		case viper.ConfigFileNotFoundError:
+			// No configuration file is okay unless we specifically asked for a named file
+			if sendMail || testMailFlag {
+				return errors.New("No global config found: Can't use -m or -tm flags")
+			}
+			if cfgFile != "" {
+				return err
+			}
+			return nil
 		}
-		return nil
 	}
 
 	logMessage(nil, fmt.Sprint("Using global config: ", viper.ConfigFileUsed()))
@@ -125,24 +137,84 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 		globalLogFileCount = configInt
 	}
 
-	// No form of defaults for E-Mail settings, just read them in
-	emailFromAddress = viper.GetString("emailFromAddress")
-	emailToAddress = viper.GetString("emailToAddress")
-	emailServerHostname = viper.GetString("emailServerHostname")
-	emailServerPort = viper.GetInt("emailServerPort")
-	emailAuthUsername = viper.GetString("emailAuthUsername")
-	emailAuthPassword = viper.GetString("emailAuthPassword")
+	// Support for deprecated -m flag until it gets removed
+	if sendMail || testMailFlag {
+		defaultNotifier, err := NewEmailNotifier()
+		if err != nil {
+			return err
+		}
+		onSuccessNotifiers = append(onSuccessNotifiers, defaultNotifier)
+		onFailureNotifiers = append(onFailureNotifiers, defaultNotifier)
+		return nil
+	}
+
+	var err error
+	// Configure notifiers for onSucces notification
+	if configSlice := viper.GetStringSlice("notifications.onSuccess"); len(configSlice) > 0 {
+		onSuccessNotifiers, err = configureNotificationChannel(configSlice, "onSuccess")
+		if err != nil {
+			return err
+		}
+	}
+
+	// Configure notifiers for onFailure notification
+	if configSlice := viper.GetStringSlice("notifications.onFailure"); len(configSlice) > 0 {
+		onFailureNotifiers, err = configureNotificationChannel(configSlice, "onFailure")
+		if err != nil {
+			return err
+		}
+	}
+
+	// Configure notifiers for onStart notification
+	if configSlice := viper.GetStringSlice("notifications.onStart"); len(configSlice) > 0 {
+		onStartNotifiers, err = configureNotificationChannel(configSlice, "onStart")
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
+}
+
+func configureNotificationChannel(channels []string, notificationType string) ([]Notifier, error) {
+	notifiers := []Notifier{}
+	for _, channel := range channels {
+		if channel == "email" {
+			emailNotifier, err := NewEmailNotifier()
+			if err != nil {
+				return nil, err
+			}
+			if isUniqueNotifier(emailNotifier, notifiers) {
+				notifiers = append(notifiers, emailNotifier)
+			}
+			continue
+		}
+		// Return error if invalid notification channel is provided
+		return nil, fmt.Errorf("Invalid notification channel \"%s\" provided for %sNotifier", channel, notificationType)
+	}
+	return notifiers, nil
 }
 
 func verifyPathExists(path string) error {
 	var err error
 
 	if _, err = os.Stat(path); err != nil {
-		fmt.Fprintln(os.Stderr, "Error: ", err)
 		return err
 	}
 
 	return nil
+}
+
+func hasFailureNotifier() bool {
+	return len(onFailureNotifiers) > 0
+}
+
+// Checks (by type) if notifier is unique
+func isUniqueNotifier(notifier Notifier, collection []Notifier) bool {
+	for _, existing := range collection {
+		if notifier.(Notifier) == existing.(Notifier) {
+			return false
+		}
+	}
+	return true
 }

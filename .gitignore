@@ -55,3 +55,6 @@ fabric.properties
 
 # Editor-based Rest Client
 .idea/httpRequests
+
+# Vim gotags / ctags file
+tags

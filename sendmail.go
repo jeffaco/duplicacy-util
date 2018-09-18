@@ -213,7 +213,9 @@ func sendMailMessage(subject string, bodyHTML []string, bodyText []string) error
 	m.SetHeader("To", emailToAddress)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text", strings.Join(bodyText, "\r\n"))
-	m.AddAlternative("text/html", strings.Join(bodyHTML, "\r\n"))
+	if len(bodyHTML) != 0 {
+		m.AddAlternative("text/html", strings.Join(bodyHTML, "\r\n"))
+	}
 
 	d := gomail.NewDialer(emailServerHostname, emailServerPort, emailAuthUsername, emailAuthPassword)
 
