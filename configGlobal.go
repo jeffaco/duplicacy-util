@@ -143,8 +143,8 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 		if err != nil {
 			return err
 		}
+		onSuccessNotifiers = append(onSuccessNotifiers, defaultNotifier)
 		onFailureNotifiers = append(onFailureNotifiers, defaultNotifier)
-		onStartNotifiers = append(onStartNotifiers, defaultNotifier)
 		return nil
 	}
 

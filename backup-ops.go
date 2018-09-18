@@ -97,6 +97,9 @@ func performBackup() error {
 	logger.Println("######################################################################")
 	logMessage(logger, fmt.Sprint("Operations completed in ", getTimeDiffString(startTime, endTime)))
 
+	// Notify all configure channels that the backup process has completd
+	notifyOfSuccess()
+
 	return nil
 }
 

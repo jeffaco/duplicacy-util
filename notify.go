@@ -1,6 +1,8 @@
 package main
 
-import "errors"
+import (
+	"errors"
+)
 
 func notifyOfStart() {
 	for _, notifier := range onStartNotifiers {
@@ -68,10 +70,9 @@ func testNotifications() error {
 		return errors.New("Warning: No notifiers are configured")
 	}
 
-	for _, notifier := range onFailureNotifiers {
-		if err := notifier.NotifyOfFailure(); err != nil {
-			return err
-		}
-	}
+	notifyOfStart()
+	notifyOfSuccess()
+	notifyOfFailure()
+
 	return nil
 }
