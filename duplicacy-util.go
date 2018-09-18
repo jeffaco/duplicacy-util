@@ -65,6 +65,9 @@ var (
 
 	// Global storage directory (location where all files are stored)
 	globalStorageDirectory string
+
+	// Unit testing active?
+	runningUnitTests bool
 )
 
 func init() {

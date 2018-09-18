@@ -7,6 +7,12 @@ import (
 
 func TestValidConfig(t *testing.T) {
 	quietFlag = true
+	runningUnitTests = true
+	defer func() {
+		quietFlag = false
+		runningUnitTests = false
+	}()
+
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/fullValidConfig.yml")
 	if err != nil {
 		t.Error(err)
@@ -14,6 +20,13 @@ func TestValidConfig(t *testing.T) {
 }
 
 func TestConfigForParsingErrors(t *testing.T) {
+	quietFlag = true
+	runningUnitTests = true
+	defer func() {
+		quietFlag = false
+		runningUnitTests = false
+	}()
+
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/corruptedConfig.yml")
 	if err == nil {
 		t.Error("Parsing error should have been returned")
@@ -21,6 +34,11 @@ func TestConfigForParsingErrors(t *testing.T) {
 }
 
 func TestInvalidDuplicacyPath(t *testing.T) {
+	quietFlag = true
+	defer func() {
+		quietFlag = false
+	}()
+
 	os.Setenv("DUPLICACYPATH", "/no/such/path")
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/emptyConfig.yml")
 	if err == nil {
@@ -30,6 +48,13 @@ func TestInvalidDuplicacyPath(t *testing.T) {
 }
 
 func TestInvalidLockDirectory(t *testing.T) {
+	quietFlag = true
+	runningUnitTests = true
+	defer func() {
+		quietFlag = false
+		runningUnitTests = false
+	}()
+
 	os.Setenv("LOCKDIRECTORY", "/no/such/path")
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/emptyConfig.yml")
 	os.Unsetenv("LOCKDIRECTORY")
@@ -39,6 +64,13 @@ func TestInvalidLockDirectory(t *testing.T) {
 }
 
 func TestInvalidLogDirectory(t *testing.T) {
+	quietFlag = true
+	runningUnitTests = true
+	defer func() {
+		quietFlag = false
+		runningUnitTests = false
+	}()
+
 	os.Setenv("LOGDIRECTORY", "/no/such/path")
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/emptyConfig.yml")
 	os.Unsetenv("LOGDIRECTORY")
@@ -48,6 +80,9 @@ func TestInvalidLogDirectory(t *testing.T) {
 }
 
 func TestInvalidConfigFilePath(t *testing.T) {
+	runningUnitTests = true
+	defer func() { runningUnitTests = false }()
+
 	err := loadGlobalConfig(".", "no/such/path")
 	if err == nil {
 		t.Error("Invalid path error should have been returned")
@@ -55,6 +90,13 @@ func TestInvalidConfigFilePath(t *testing.T) {
 }
 
 func TestValidConfigurationChannel(t *testing.T) {
+	quietFlag = true
+	runningUnitTests = true
+	defer func() {
+		quietFlag = false
+		runningUnitTests = false
+	}()
+
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/fullValidConfig.yml")
 	if err != nil {
 		t.Error(err)
@@ -66,6 +108,13 @@ func TestValidConfigurationChannel(t *testing.T) {
 }
 
 func TestInvalidConfigurationChannel(t *testing.T) {
+	quietFlag = true
+	runningUnitTests = true
+	defer func() {
+		quietFlag = false
+		runningUnitTests = false
+	}()
+
 	_, err := configureNotificationChannel([]string{"emails"}, "onFailure")
 	if err == nil {
 		t.Error("Invalid notification channel error should have been returned")
@@ -73,6 +122,13 @@ func TestInvalidConfigurationChannel(t *testing.T) {
 }
 
 func TestForNoDuplicateNotifiers(t *testing.T) {
+	quietFlag = true
+	runningUnitTests = true
+	defer func() {
+		quietFlag = false
+		runningUnitTests = false
+	}()
+
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/fullValidConfig.yml")
 	if err != nil {
 		t.Error(err)
@@ -90,7 +146,15 @@ func TestForNoDuplicateNotifiers(t *testing.T) {
 }
 
 func TestSendMailFlagWithInvalidEmailConfig(t *testing.T) {
+	quietFlag = true
+	runningUnitTests = true
 	sendMail = true
+	defer func() {
+		quietFlag = false
+		runningUnitTests = false
+		sendMail = false
+	}()
+
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/emptyConfig.yml")
 	if err == nil {
 		t.Error("Invalid E-main configuration error should have been returned")
@@ -98,7 +162,13 @@ func TestSendMailFlagWithInvalidEmailConfig(t *testing.T) {
 }
 
 func TestSendMailFlagWithNoConfig(t *testing.T) {
+	runningUnitTests = true
 	sendMail = true
+	defer func() {
+		runningUnitTests = false
+		sendMail = false
+	}()
+
 	err := loadGlobalConfig(".", "")
 	if err == nil {
 		t.Error("Invalid E-main configuration error should have been returned")
@@ -106,7 +176,15 @@ func TestSendMailFlagWithNoConfig(t *testing.T) {
 }
 
 func TestSendMailFlagWithValidEmailConfig(t *testing.T) {
+	quietFlag = true
+	runningUnitTests = true
 	sendMail = true
+	defer func() {
+		quietFlag = false
+		runningUnitTests = false
+		sendMail = false
+	}()
+
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/fullValidConfig.yml")
 	if err != nil {
 		t.Error(err)
@@ -114,6 +192,13 @@ func TestSendMailFlagWithValidEmailConfig(t *testing.T) {
 }
 
 func TestValidDeprecatedEmailConfig(t *testing.T) {
+	quietFlag = true
+	runningUnitTests = true
+	defer func() {
+		quietFlag = false
+		runningUnitTests = false
+	}()
+
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/deprecatedConfig.yml")
 	if err != nil {
 		t.Error(err)

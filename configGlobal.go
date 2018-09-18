@@ -52,8 +52,12 @@ func loadGlobalConfig(storageDir string, cfgFile string) error {
 		return err
 	}
 
+	//
 	// Validate global environment variables
-	if _, err = exec.LookPath(duplicacyPath); err != nil {
+	//
+
+	// Don't validate path when running unit tests (invalid path is okay for testing)
+	if _, err = exec.LookPath(duplicacyPath); err != nil && !runningUnitTests {
 		return err
 	}
 
