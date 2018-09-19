@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"testing"
 )
@@ -199,7 +198,7 @@ func TestSendMailFlagWithValidEmailConfig(t *testing.T) {
 
 	// Verify that the auth password is what is stored in global configuration file
 	if emailAuthPassword != "gaozqlwbztypagwt" {
-		t.Error(fmt.Sprintf("email.authPassword should be '%s', but instead is '%s'", "gaozqlwbztypagwt", emailAuthPassword))
+		t.Errorf("email.authPassword should be '%s', but instead is '%s'", "gaozqlwbztypagwt", emailAuthPassword)
 	}
 }
 
@@ -261,6 +260,6 @@ func TestSendMailWithEnvioronmentPassword(t *testing.T) {
 
 	// Verify that the auth password is as per the environment variale
 	if emailAuthPassword != "xyzzy" {
-		t.Error(fmt.Sprintf("email.authPassword should be '%s', but instead is '%s'", "xyzzy", emailAuthPassword))
+		t.Errorf("email.authPassword should be '%s', but instead is '%s'", "xyzzy", emailAuthPassword)
 	}
 }

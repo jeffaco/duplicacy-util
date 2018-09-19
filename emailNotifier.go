@@ -60,7 +60,7 @@ func (notifier EmailNotifier) NotifyOfSuccess() error {
 	return notifier.email(subject, htmlGenerateBody(), mailBody)
 }
 
-// NotifyOfFailure is triggered when a failure occured during backup
+// NotifyOfFailure is triggered when a failure occurred during backup
 func (notifier EmailNotifier) NotifyOfFailure() error {
 	subject := fmt.Sprintf("duplicacy-util: Backup results for configuration %s (FAILURE)", cmdConfig)
 	return notifier.email(subject, htmlGenerateBody(), mailBody)
