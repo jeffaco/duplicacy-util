@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/spf13/viper"
 )
@@ -82,7 +83,12 @@ func useNewConfigStyle() {
 	emailServerHostname = viper.GetString("email.serverHostname")
 	emailServerPort = viper.GetInt("email.serverPort")
 	emailAuthUsername = viper.GetString("email.authUsername")
-	emailAuthPassword = viper.GetString("email.authPassword")
+
+	// Allow environment variable DU_EMAIL_AUTH_PASSWORD to override authPassword in configuration
+	if emailAuthPassword = os.Getenv("DU_EMAIL_AUTH_PASSWORD"); emailAuthPassword == "" {
+		emailAuthPassword = viper.GetString("email.authPassword")
+	}
+
 	emailAcceptAnyCerts = viper.GetBool("email.acceptInsecureCerts")
 }
 

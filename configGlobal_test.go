@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"testing"
 )
@@ -179,6 +180,7 @@ func TestSendMailFlagWithValidEmailConfig(t *testing.T) {
 	quietFlag = true
 	runningUnitTests = true
 	sendMail = true
+	os.Unsetenv("DU_EMAIL_AUTH_PASSWORD")
 	defer func() {
 		quietFlag = false
 		runningUnitTests = false
@@ -193,6 +195,11 @@ func TestSendMailFlagWithValidEmailConfig(t *testing.T) {
 	// YAML doesn't mention the acceptInsecureCerts; it should default to false
 	if emailAcceptAnyCerts {
 		t.Error("acceptInsecureCerts was not specified, yet set in code")
+	}
+
+	// Verify that the auth password is what is stored in global configuration file
+	if emailAuthPassword != "gaozqlwbztypagwt" {
+		t.Error(fmt.Sprintf("email.authPassword should be '%s', but instead is '%s'", "gaozqlwbztypagwt", emailAuthPassword))
 	}
 }
 
@@ -232,5 +239,28 @@ func TestAcceptInsecureCertificate(t *testing.T) {
 	// YAML sets acceptInsecureCerts to true; verify that we detected that
 	if emailAcceptAnyCerts == false {
 		t.Error("acceptInsecureCerts was specified, yet not set in code")
+	}
+}
+
+func TestSendMailWithEnvioronmentPassword(t *testing.T) {
+	quietFlag = true
+	runningUnitTests = true
+	sendMail = true
+	os.Setenv("DU_EMAIL_AUTH_PASSWORD", "xyzzy")
+	defer func() {
+		quietFlag = false
+		runningUnitTests = false
+		sendMail = false
+		os.Unsetenv("DU_EMAIL_AUTH_PASSWORD")
+	}()
+
+	err := loadGlobalConfig(".", "test/assets/globalConfigs/fullValidConfig.yml")
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Verify that the auth password is as per the environment variale
+	if emailAuthPassword != "xyzzy" {
+		t.Error(fmt.Sprintf("email.authPassword should be '%s', but instead is '%s'", "xyzzy", emailAuthPassword))
 	}
 }

@@ -160,12 +160,13 @@ The following fields are checked in the global configuration file:
 ##### Notifications
 
 `Duplicacy-util` supports notifying you when backups succeed, fail and start. Unless
-you're planning to only be running `dupliacy-util` interactively, it's strongly recommended
-to configure notifications. 
+you're planning to only be running `dupliacy-util` interactively, it's strongly
+recommended to configure notifications.
 
 For now only email notifications are supported, but more notification channels
-are on it's way. The following config snippet shows how to subscribe to specific
-notifications:
+will be implemented. The following config snippet shows how to subscribe to
+specific notifications:
+
 ```
 notifications:
   onSuccess: ['email']
@@ -184,6 +185,15 @@ notifications:
 | authUsername        | Username for authentication with SMTP server         | None    |
 | authPassword        | Password for authentication with SMTP server         | None    |
 | acceptInsecureCerts | Accept insecure or self-signed server certificates   | false   |
+
+Notes on email fields:
+* If you don't wish to store your email authentication password in the global
+  configuration file, you can set environment variable `DU_EMAIL_AUTH_PASSWORD`
+  to your email server password. If this environment variable is not defined,
+  then we'll check the global configuration file for the password.
+* If you are using a local email server, you are likely using a self-signed
+  certificate. If that's the case, you should set `acceptInsecureCerts` to
+  `true` so `duplicacy-util` won't reject the server certificate.
 
 Here is an example how to setup email notifications:
 
@@ -213,10 +223,6 @@ E-Mail subjects from `duplicacy-util` will be of the following format:
 You can filter on the subject line to direct the E-Mail appropriately
 to a folder of your choice.
 See [Management of E-Mail Messages](#management-of-e-mail-messages), for E-Mail configuration hints.
-
-If you are using a local email server, you are likely using a self-signed certificate.
-If that's the case, you should set `acceptInsecureCerts` to `true` so `duplicacy-util`
-won't reject the server certificate.
 
 #### Local configuration file
 
@@ -494,7 +500,9 @@ password that can be generated in the
 This works around two-factor authentication or other issues that may
 create problems. Note that the password stored in the global configuration
 file is not encrypted at this time. On a shared system, you should set
-permissions of this file appropriately.
+permissions of this file appropriately, or use environment variable
+`DU_EMAIL_AUTH_PASSWORD` to override the value stored in the global
+configuration file.
 
 Once you set up the E-Mail configuration appropriately, you can test it
 with a command like: `./duplicacy-util -tn`. This will trigger a failure 
