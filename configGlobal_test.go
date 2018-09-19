@@ -189,6 +189,11 @@ func TestSendMailFlagWithValidEmailConfig(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	// YAML doesn't mention the acceptInsecureCerts; it should default to false
+	if emailAcceptAnyCerts {
+		t.Error("acceptInsecureCerts was not specified, yet set in code")
+	}
 }
 
 func TestValidDeprecatedEmailConfig(t *testing.T) {
@@ -206,5 +211,26 @@ func TestValidDeprecatedEmailConfig(t *testing.T) {
 	_, err = NewEmailNotifier()
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestAcceptInsecureCertificate(t *testing.T) {
+	quietFlag = true
+	runningUnitTests = true
+	sendMail = true
+	defer func() {
+		quietFlag = false
+		runningUnitTests = false
+		sendMail = false
+	}()
+
+	err := loadGlobalConfig(".", "test/assets/globalConfigs/fullValidConfigInsecureCerts.yml")
+	if err != nil {
+		t.Error(err)
+	}
+
+	// YAML sets acceptInsecureCerts to true; verify that we detected that
+	if emailAcceptAnyCerts == false {
+		t.Error("acceptInsecureCerts was specified, yet not set in code")
 	}
 }

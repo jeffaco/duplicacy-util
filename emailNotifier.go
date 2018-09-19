@@ -15,6 +15,7 @@ var (
 	emailServerPort     int
 	emailAuthUsername   string
 	emailAuthPassword   string
+	emailAcceptAnyCerts bool
 )
 
 // NewEmailNotifier creates a new email notifier. Returns error if
@@ -82,6 +83,7 @@ func useNewConfigStyle() {
 	emailServerPort = viper.GetInt("email.serverPort")
 	emailAuthUsername = viper.GetString("email.authUsername")
 	emailAuthPassword = viper.GetString("email.authPassword")
+	emailAcceptAnyCerts = viper.GetBool("email.acceptInsecureCerts")
 }
 
 func useOldConfigStyle() {

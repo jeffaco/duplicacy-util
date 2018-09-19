@@ -15,6 +15,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"html"
 	"strings"
@@ -218,6 +219,11 @@ func sendMailMessage(subject string, bodyHTML []string, bodyText []string) error
 	}
 
 	d := gomail.NewDialer(emailServerHostname, emailServerPort, emailAuthUsername, emailAuthPassword)
+
+	// If we should accept insecure certificates, tell the dialer that's the case
+	if emailAcceptAnyCerts {
+		d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	}
 
 	// Send the message
 	return d.DialAndSend(m)

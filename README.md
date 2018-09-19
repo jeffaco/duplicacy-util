@@ -15,6 +15,8 @@ Table of contents:
 - [Build instructions](#build-instructions)
 - [How do you configure duplicacy-util?](#how-do-you-configure-duplicacy-util)
   - [Global configuration file](#global-configuration-file)
+    - [Notifications](#notifications)
+    - [E-Mail Notifications](#email-notifications)
   - [Local configuration file](#local-configuration-file)
 - [Command line usage](#command-line-usage)
 - [Getting started with duplicacy-util](#getting-started-with-duplicacy-util)
@@ -155,10 +157,12 @@ The following fields are checked in the global configuration file:
 | logdirectory        | Directory where log files are stored                 | Storage directory, or $HOME/.duplicacy-util/log |
 | logfilecount        | Number of historical log files that should be stored | 5                                               |
 
-#### Notifications
+##### Notifications
+
 `Duplicacy-util` supports notifying you when backups succeed, fail and start. Unless
 you're planning to only be running `dupliacy-util` interactively, it's strongly recommended
 to configure notifications. 
+
 For now only email notifications are supported, but more notification channels
 are on it's way. The following config snippet shows how to subscribe to specific
 notifications:
@@ -171,14 +175,15 @@ notifications:
 
 ##### Email notifications
 
-| Field Name          | Purpose                                              |
-| ------------------- | ---------------------------------------------------- |
-| fromAddress         | From address (i.e. from-user@domain.com)             |
-| toAddress           | To address (i.e. to-user@domain.com)                 |
-| serverHostname      | SMTP server (i.e. smtp@gmail.com)                    |
-| serverPort          | Port of SMTP server (i.e. 465 or 587)                |
-| authUsername        | Username for authentication with SMTP server         |
-| authPassword        | Password for authentication with SMTP server         |
+| Field Name          | Purpose                                              | Default |
+| ------------------- | ---------------------------------------------------- | ------- |
+| fromAddress         | From address (i.e. from-user@domain.com)             | None    |
+| toAddress           | To address (i.e. to-user@domain.com)                 | None    |
+| serverHostname      | SMTP server (i.e. smtp@gmail.com)                    | None    |
+| serverPort          | Port of SMTP server (i.e. 465 or 587)                | None    |
+| authUsername        | Username for authentication with SMTP server         | None    |
+| authPassword        | Password for authentication with SMTP server         | None    |
+| acceptInsecureCerts | Accept insecure or self-signed server certificates   | false   |
 
 Here is an example how to setup email notifications:
 
@@ -209,6 +214,9 @@ You can filter on the subject line to direct the E-Mail appropriately
 to a folder of your choice.
 See [Management of E-Mail Messages](#management-of-e-mail-messages), for E-Mail configuration hints.
 
+If you are using a local email server, you are likely using a self-signed certificate.
+If that's the case, you should set `acceptInsecureCerts` to `true` so `duplicacy-util`
+won't reject the server certificate.
 
 #### Local configuration file
 
