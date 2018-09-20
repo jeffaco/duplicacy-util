@@ -160,9 +160,17 @@ func main() {
 
 	returnStatus, err := processArguments()
 	if err != nil {
-		// Notify that the backup process has failed
-		logError(nil, fmt.Sprintf("Error: %s", err))
-		notifyOfFailure()
+		switch returnStatus {
+		case 6200:
+			// Notify that the backup process has been skipped
+			logError(nil, fmt.Sprintf("Warning: %s", err))
+			notifyOfFailure(fmt.Sprintf("duplicacy-util: Backup results for configuration %s (skipped)", cmdConfig))
+
+		default:
+			// Notify that the backup process has failed
+			logError(nil, fmt.Sprintf("Error: %s", err))
+			notifyOfFailure("")
+		}
 	}
 
 	os.Exit(returnStatus)
@@ -230,7 +238,7 @@ func obtainLock() (int, error) {
 
 	if !locked {
 		// do not have exclusive lock
-		return 200, errors.New("Unable to obtain lock using lockfile: " + lockfile)
+		return 6200, errors.New("Backup already running and will be skipped")
 	}
 
 	// flock doesn't remove the lock file when done, so let's do it ourselves

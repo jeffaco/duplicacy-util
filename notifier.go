@@ -4,5 +4,5 @@ package main
 type Notifier interface {
 	NotifyOfStart() error
 	NotifyOfSuccess() error
-	NotifyOfFailure() error
+	NotifyOfFailure(string) error
 }

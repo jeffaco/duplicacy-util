@@ -218,6 +218,7 @@ E-Mail subjects from `duplicacy-util` will be of the following format:
 | --------------- | -------------------------------------------------------------------------- |
 | Success         | `duplicacy-util: Backup results for configuration <config-name> (success)` |
 | Failure         | `duplicacy-util: Backup results for configuration <config-name> (FAILURE)` |
+| Already running | `duplicacy-util: Backup results for configuration <config-name> (skipped)` |
 | Start           | `duplicacy-util: Backup started for configuration <config-name>`           |
 
 You can filter on the subject line to direct the E-Mail appropriately

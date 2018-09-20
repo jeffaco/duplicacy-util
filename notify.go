@@ -16,9 +16,12 @@ func notifyOfSuccess() {
 	}
 }
 
-func notifyOfFailure() {
+// notifyOfFailure takes a subject argument:
+//   If zero length, subject will be chosen by default
+//   If specified, will override the default subject
+func notifyOfFailure(subject string) {
 	for _, notifier := range onFailureNotifiers {
-		_ = notifier.NotifyOfFailure()
+		_ = notifier.NotifyOfFailure(subject)
 	}
 }
 
@@ -72,7 +75,7 @@ func testNotifications() error {
 
 	notifyOfStart()
 	notifyOfSuccess()
-	notifyOfFailure()
+	notifyOfFailure("")
 
 	return nil
 }
