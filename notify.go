@@ -10,6 +10,12 @@ func notifyOfStart() {
 	}
 }
 
+func notifyOfSkip() {
+	for _, notifier := range onSkipNotifiers {
+		_ = notifier.NotifyOfSkip()
+	}
+}
+
 func notifyOfSuccess() {
 	for _, notifier := range onSuccessNotifiers {
 		_ = notifier.NotifyOfSuccess()
@@ -19,9 +25,9 @@ func notifyOfSuccess() {
 // notifyOfFailure takes a subject argument:
 //   If zero length, subject will be chosen by default
 //   If specified, will override the default subject
-func notifyOfFailure(subject string) {
+func notifyOfFailure() {
 	for _, notifier := range onFailureNotifiers {
-		_ = notifier.NotifyOfFailure(subject)
+		_ = notifier.NotifyOfFailure()
 	}
 }
 
@@ -74,8 +80,9 @@ func testNotifications() error {
 	}
 
 	notifyOfStart()
+	notifyOfSkip()
 	notifyOfSuccess()
-	notifyOfFailure("")
+	notifyOfFailure()
 
 	return nil
 }

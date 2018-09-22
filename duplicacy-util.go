@@ -164,12 +164,12 @@ func main() {
 		case 6200:
 			// Notify that the backup process has been skipped
 			logError(nil, fmt.Sprintf("Warning: %s", err))
-			notifyOfFailure(fmt.Sprintf("duplicacy-util: Backup results for configuration %s (skipped)", cmdConfig))
+			notifyOfSkip()
 
 		default:
 			// Notify that the backup process has failed
 			logError(nil, fmt.Sprintf("Error: %s", err))
-			notifyOfFailure("")
+			notifyOfFailure()
 		}
 	}
 

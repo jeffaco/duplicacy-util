@@ -1,7 +1,8 @@
 notifications:
+  onStart: []
+  onSkipped: ['email']
   onSuccess: ['email']
   onFailure: ['email']
-  onStart: []
 
 email:
   fromAddress: "Donald Duck <donald.xyzzy@gmail.com>"

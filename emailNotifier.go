@@ -60,12 +60,15 @@ func (notifier EmailNotifier) NotifyOfSuccess() error {
 	return notifier.email(subject, htmlGenerateBody(), mailBody)
 }
 
-// NotifyOfFailure is triggered when a failure occurred during backup
-func (notifier EmailNotifier) NotifyOfFailure(subject string) error {
-	if len(subject) == 0 {
-		subject = fmt.Sprintf("duplicacy-util: Backup results for configuration %s (FAILURE)", cmdConfig)
-	}
+// NotifyOfSkip is triggered when a backup is skipped (if already running)
+func (notifier EmailNotifier) NotifyOfSkip() error {
+	subject := fmt.Sprintf("duplicacy-util: Backup results for configuration %s (skipped)", cmdConfig)
+	return notifier.email(subject, htmlGenerateBody(), mailBody)
+}
 
+// NotifyOfFailure is triggered when a failure occurred during backup
+func (notifier EmailNotifier) NotifyOfFailure() error {
+	subject := fmt.Sprintf("duplicacy-util: Backup results for configuration %s (FAILURE)", cmdConfig)
 	return notifier.email(subject, htmlGenerateBody(), mailBody)
 }
 

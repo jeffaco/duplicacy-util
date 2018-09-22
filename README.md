@@ -159,9 +159,10 @@ The following fields are checked in the global configuration file:
 
 ##### Notifications
 
-`Duplicacy-util` supports notifying you when backups succeed, fail and start. Unless
-you're planning to only be running `dupliacy-util` interactively, it's strongly
-recommended to configure notifications.
+`Duplicacy-util` supports notifying you when backups start, are skipped (if
+already running), succeed, and fail. Unless you're planning to only be running
+`dupliacy-util` interactively, it's strongly recommended to configure
+notifications.
 
 For now only email notifications are supported, but more notification channels
 will be implemented. The following config snippet shows how to subscribe to
@@ -169,9 +170,10 @@ specific notifications:
 
 ```
 notifications:
+  onStart: []
+  onSkip: ['email']
   onSuccess: ['email']
   onFailure: ['email']
-  onStart: []
 ```
 
 ##### Email notifications
@@ -199,9 +201,10 @@ Here is an example how to setup email notifications:
 
 ```
 notifications:
+  onStart: []
+  onSkip: ['email']
   onSuccess: ['email']
   onFailure: ['email']
-  onStart: []
 
 email:
   fromAddress: "Donald Duck <donald.xyzzy@gmail.com>"
@@ -216,10 +219,10 @@ E-Mail subjects from `duplicacy-util` will be of the following format:
 
 | Notification    | Subject Line                                                               |
 | --------------- | -------------------------------------------------------------------------- |
+| Start           | `duplicacy-util: Backup started for configuration <config-name>`           |
+| Skip            | `duplicacy-util: Backup results for configuration <config-name> (skipped)` |
 | Success         | `duplicacy-util: Backup results for configuration <config-name> (success)` |
 | Failure         | `duplicacy-util: Backup results for configuration <config-name> (FAILURE)` |
-| Already running | `duplicacy-util: Backup results for configuration <config-name> (skipped)` |
-| Start           | `duplicacy-util: Backup started for configuration <config-name>`           |
 
 You can filter on the subject line to direct the E-Mail appropriately
 to a folder of your choice.
@@ -443,8 +446,8 @@ Exit codes from `duplicacy-util` are as follows:
 | --------------- | ----------------------------------------------- |
 | 0               | Success                                         |
 | 1-2             | Command line errors                             |
-| 200-201         | Run skipped due to existing job already running |
 | 500             | Operation from `duplicacy` command failed       |
+| 6200            | Run skipped due to existing job already running |
 
 In the event of an error, a notification will be sent with details of the
 error. Note that 200-201 operations are not considered fatal from an notification
@@ -547,7 +550,7 @@ function duplicacy_utils() {
   // Naming conventions with duplicacy-util are formatted like:
   //   "duplicacy-util: Backup results for configuration test (success)" (for successful backups), or
   //   "duplicacy-util: Backup results for configuration test (FAILURE)" (for failed backups)
-  // Check to see that it start with "duplicacy-util..." and ends with " (Success)", and if so, count
+  // Check to see that it starts with "duplicacy-util..." and ends with " (Success)", and if so, count
   // the message.
 
   for (var i = 0; i < threads.length; i++) {

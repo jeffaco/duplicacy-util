@@ -38,9 +38,10 @@ var (
 	globalLogFileCount int
 
 	// Notification publishers
+	onStartNotifiers   []Notifier
+	onSkipNotifiers    []Notifier
 	onSuccessNotifiers []Notifier
 	onFailureNotifiers []Notifier
-	onStartNotifiers   []Notifier
 )
 
 // loadGlobalConfig reads in config file and ENV variables if set.
@@ -98,9 +99,10 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 	globalLockDir = storageDir
 	globalLogDir = filepath.Join(storageDir, "log")
 	globalLogFileCount = 5
+	onStartNotifiers = []Notifier{}
+	onSkipNotifiers = []Notifier{}
 	onSuccessNotifiers = []Notifier{}
 	onFailureNotifiers = []Notifier{}
-	onStartNotifiers = []Notifier{}
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
@@ -143,13 +145,31 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 		if err != nil {
 			return err
 		}
+
+		onSkipNotifiers = append(onSkipNotifiers, defaultNotifier)
 		onSuccessNotifiers = append(onSuccessNotifiers, defaultNotifier)
 		onFailureNotifiers = append(onFailureNotifiers, defaultNotifier)
 		return nil
 	}
 
 	var err error
-	// Configure notifiers for onSucces notification
+	// Configure notifiers for onStart notification
+	if configSlice := viper.GetStringSlice("notifications.onStart"); len(configSlice) > 0 {
+		onStartNotifiers, err = configureNotificationChannel(configSlice, "onStart")
+		if err != nil {
+			return err
+		}
+	}
+
+	// Configure notifiers for onSkip notification
+	if configSlice := viper.GetStringSlice("notifications.onSkip"); len(configSlice) > 0 {
+		onSkipNotifiers, err = configureNotificationChannel(configSlice, "onSkip")
+		if err != nil {
+			return err
+		}
+	}
+
+	// Configure notifiers for onSuccess notification
 	if configSlice := viper.GetStringSlice("notifications.onSuccess"); len(configSlice) > 0 {
 		onSuccessNotifiers, err = configureNotificationChannel(configSlice, "onSuccess")
 		if err != nil {
@@ -160,14 +180,6 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 	// Configure notifiers for onFailure notification
 	if configSlice := viper.GetStringSlice("notifications.onFailure"); len(configSlice) > 0 {
 		onFailureNotifiers, err = configureNotificationChannel(configSlice, "onFailure")
-		if err != nil {
-			return err
-		}
-	}
-
-	// Configure notifiers for onStart notification
-	if configSlice := viper.GetStringSlice("notifications.onStart"); len(configSlice) > 0 {
-		onStartNotifiers, err = configureNotificationChannel(configSlice, "onStart")
 		if err != nil {
 			return err
 		}
