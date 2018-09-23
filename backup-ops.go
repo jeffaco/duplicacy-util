@@ -131,7 +131,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 				backupEntry.filesNewSize = elements[4]
 			}
 
-			// All chunks: 348444 total, 1668G bytes; 2415 new, 12,391M bytes, 12,255M bytes uploaded
+		// All chunks: 348444 total, 1668G bytes; 2415 new, 12,391M bytes, 12,255M bytes uploaded
 		case strings.HasPrefix(line, "All chunks:"):
 			logger.Println(line)
 			logMessage(logger, fmt.Sprint("  ", line))
@@ -147,7 +147,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 				backupEntry.chunkNewUploaded = elements[5]
 			}
 
-			// Try to catch and point out password problems within dupliacy
+		// Try to catch and point out password problems within dupliacy
 		case strings.HasPrefix(line, "Enter storage password:") || strings.HasSuffix(line, "Authorization failure"):
 			logMessage(logger, "  Error: Duplicacy appears to be prompting for a password")
 
@@ -159,7 +159,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 		}
 	}
 
-	// Perform backup/copy operations
+	// Perform backup operation
 	for i, backupInfo := range configFile.backupInfo {
 		backupStartTime := time.Now()
 		logger.Println("######################################################################")
@@ -231,6 +231,7 @@ func performDuplicacyCopy(logger *log.Logger, testArgs []string) error {
 				copyEntry.chunkCopyCount = elements[2]
 				copyEntry.chunkSkipCount = elements[3]
 			}
+
 		default:
 			logger.Println(line)
 		}
