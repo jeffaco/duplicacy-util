@@ -34,10 +34,12 @@ var (
 	cmdStorageDir   string // Base directory for storage of global/repository/log files
 
 	// Binary options for what operations to perform
-	cmdAll    bool
-	cmdBackup bool
-	cmdCheck  bool
-	cmdPrune  bool
+	cmdAll       bool
+	cmdBackup    bool
+	cmdBackupDep bool
+	cmdCopy      bool
+	cmdCheck     bool
+	cmdPrune     bool
 
 	sendMail              bool
 	testMailFlag          bool
@@ -76,10 +78,15 @@ func init() {
 	flag.StringVar(&cmdGlobalConfig, "g", "", "Global configuration file name")
 	flag.StringVar(&cmdStorageDir, "sd", "", "Full path to storage directory for configuration/log files")
 
-	flag.BoolVar(&cmdAll, "a", false, "Perform all duplicacy operations (backup/copy, purge, check)")
-	flag.BoolVar(&cmdBackup, "b", false, "Perform duplicacy backup/copy operation")
-	flag.BoolVar(&cmdCheck, "c", false, "Perform duplicacy check operation")
-	flag.BoolVar(&cmdPrune, "p", false, "Perform duplicacy prune operation")
+	flag.BoolVar(&cmdAll, "a", false, "Perform all duplicacy operations (backup, copy, purge, check)")
+	flag.BoolVar(&cmdBackup, "backup", false, "Perform duplicacy backup operation")
+	flag.BoolVar(&cmdCopy, "copy", false, "Perform duplicacy copy operation")
+	flag.BoolVar(&cmdCheck, "check", false, "Perform duplicacy check operation")
+	flag.BoolVar(&cmdPrune, "prune", false, "Perform duplicacy prune operation")
+
+	flag.BoolVar(&cmdBackupDep, "b", false, "Perform duplicacy backup operation (deprecated; use -backup -copy)")
+	flag.BoolVar(&cmdCheck, "c", false, "Perform duplicacy check operation (deprecated; use -check)")
+	flag.BoolVar(&cmdPrune, "p", false, "Perform duplicacy prune operation (deprecated; use -prune)")
 
 	flag.BoolVar(&sendMail, "m", false, "(Deprecated) Send E-Mail with results of operations (implies quiet)")
 	flag.BoolVar(&testMailFlag, "tm", false, "(Deprecated: Use -tn instead) Send a test message via E-Mail")
@@ -179,7 +186,11 @@ func main() {
 func processArguments() (int, error) {
 
 	if cmdAll {
-		cmdBackup, cmdPrune, cmdCheck = true, true, true
+		cmdBackup, cmdCopy, cmdPrune, cmdCheck = true, true, true, true
+	}
+	// Deprecated -b command triggers backup and copy
+	if cmdBackupDep {
+		cmdBackup, cmdCopy = true, true
 	}
 	if debugFlag {
 		verboseFlag = true

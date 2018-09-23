@@ -418,26 +418,34 @@ This will generate output similar to:
 
 ```text
 Usage of ./duplicacy-util:
-  -a	Perform all duplicacy operations (backup/copy, purge, check)
-  -b	Perform duplicacy backup/copy operation
-  -c	Perform duplicacy check operation
-  -d	Enable debug output (implies verbose)
+  -a    Perform all duplicacy operations (backup, copy, purge, check)
+  -b    Perform duplicacy backup operation (deprecated; use -backup -copy)
+  -backup
+        Perform duplicacy backup operation
+  -c    Perform duplicacy check operation (deprecated; use -check)
+  -check
+        Perform duplicacy check operation
+  -copy
+        Perform duplicacy copy operation
+  -d    Enable debug output (implies verbose)
   -f string
-    	Configuration file for storage definitions (must be specified)
+        Configuration file for storage definitions (must be specified)
   -g string
-    	Global configuration file name
-  -m	(Deprecated) Send E-Mail with results of operations (implies quiet)
-  -p	Perform duplicacy prune operation
-  -q	Quiet operations (generate output only in case of error)
+        Global configuration file name
+  -m    (Deprecated) Send E-Mail with results of operations (implies quiet)
+  -p    Perform duplicacy prune operation (deprecated; use -prune)
+  -prune
+        Perform duplicacy prune operation
+  -q    Quiet operations (generate output only in case of error)
   -sd string
-    	Full path to storage directory for configuration/log files
+        Full path to storage directory for configuration/log files
   -tm
-    	(Deprecated: Use -tn instead) Send a test message via E-Mail
+        (Deprecated: Use -tn instead) Send a test message via E-Mail
   -tn
-    	Test notifications
-  -v	Enable verbose output
+        Test notifications
+  -v    Enable verbose output
   -version
-    	Display version number
+        Display version number
 ```
 
 Exit codes from `duplicacy-util` are as follows:

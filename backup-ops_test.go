@@ -53,7 +53,6 @@ func TestRunDuplicacyBackup(t *testing.T) {
 		assetInputFragment string
 		resultsFile        string
 		backupInfo         []map[string]string
-		copyInfo           []map[string]string
 	}{
 		// Dupicacy Error: Enter Backblaze Account ID:Enter Backblaze Application Key:Failed to load the Backblaze B2 storage at b2://hidden-bucket: Authorization failure
 		{
@@ -61,7 +60,6 @@ func TestRunDuplicacyBackup(t *testing.T) {
 			[]map[string]string{
 				{"name": "b2", "threads": "10", "vss": "false"},
 			},
-			[]map[string]string{},
 		},
 		// Duplicacy Error: Enter storage password:Failed to read the password: EOF
 		{
@@ -69,7 +67,6 @@ func TestRunDuplicacyBackup(t *testing.T) {
 			[]map[string]string{
 				{"name": "b2", "threads": "5", "vss": "false"},
 			},
-			[]map[string]string{},
 		},
 		// Test of long, very involved backup
 		{"taltos.log", "taltos.log_results_backup",
@@ -77,6 +74,58 @@ func TestRunDuplicacyBackup(t *testing.T) {
 				{"name": "gcd", "threads": "5", "vss": "false"},
 				{"name": "azure-direct", "threads": "10", "vss": "false"},
 			},
+		},
+	}
+
+	for _, test := range tests {
+		// Set up logging infrastructure
+		logger, file, err := setupLogging()
+		if err != nil {
+			t.Errorf("unexpected error creating log file, got %#v", err)
+		}
+		loggingSystemDisplayTime = false
+		quietFlag = true
+		defer func() {
+			file.Close()
+			os.Remove(file.Name()) // For debugging, might need to leave log file around for perusal
+
+			loggingSystemDisplayTime = true
+			quietFlag = false
+		}()
+
+		// Initialize data structures for test
+		configFile.backupInfo = test.backupInfo
+		mailBody = nil
+		//defer os.Remove(file.Name())
+
+		execCommand = fakeBackupOpsCommand
+		defer func() { execCommand = exec.Command }()
+		if err := performDuplicacyBackup(logger, []string{"testbackup", test.assetInputFragment}); err != nil {
+			t.Errorf("expected nil error, got %v", err)
+		}
+
+		// Check results of anon function
+		expectedOutputInBytes, err := ioutil.ReadFile(path.Join("test/assets", test.resultsFile))
+		if err != nil {
+			t.Errorf("unable to read backup results file %s", err)
+			return
+		}
+		expectedOutput := string(expectedOutputInBytes)
+		actualOutput := strings.Join(mailBody, "\n") + "\n"
+		if actualOutput != expectedOutput {
+			t.Errorf("result was incorrect, got\n=====\n%s=====\nexpected\n=====\n%s=====", actualOutput, expectedOutput)
+		}
+	}
+}
+
+func TestRunDuplicacyCopy(t *testing.T) {
+	tests := []struct {
+		assetInputFragment string
+		resultsFile        string
+		copyInfo           []map[string]string
+	}{
+		// Test of long, very involved copy operation
+		{"taltos.log", "taltos.log_results_copy",
 			[]map[string]string{
 				{"from": "gcd", "to": "azure", "threads": "5"},
 			},
@@ -100,14 +149,13 @@ func TestRunDuplicacyBackup(t *testing.T) {
 		}()
 
 		// Initialize data structures for test
-		configFile.backupInfo = test.backupInfo
 		configFile.copyInfo = test.copyInfo
 		mailBody = nil
 		//defer os.Remove(file.Name())
 
 		execCommand = fakeBackupOpsCommand
 		defer func() { execCommand = exec.Command }()
-		if err := performDuplicacyBackup(logger, []string{"testbackup", test.assetInputFragment}); err != nil {
+		if err := performDuplicacyCopy(logger, []string{"testbackup", test.assetInputFragment}); err != nil {
 			t.Errorf("expected nil error, got %v", err)
 		}
 

@@ -78,6 +78,13 @@ func performBackup() error {
 		}
 	}
 
+	// Perform "duplicacy copy" if required
+	if cmdCopy {
+		if err := performDuplicacyCopy(logger, []string{}); err != nil {
+			return err
+		}
+	}
+
 	// Perform "duplicacy prune" if required
 	if cmdPrune {
 		if err := performDuplicacyPrune(logger, []string{}); err != nil {
@@ -106,7 +113,6 @@ func performBackup() error {
 func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 	// Handling when processing output from "duplicacy backup" command
 	var backupEntry backupRevision
-	var copyEntry copyRevision
 
 	backupLogger := func(line string) {
 		switch {
@@ -148,26 +154,6 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 			logger.Println(line)
 			logMessage(logger, fmt.Sprint("  ", line))
 
-		default:
-			logger.Println(line)
-		}
-	}
-
-	copyLogger := func(line string) {
-		switch {
-		// Copy complete, 107 total chunks, 0 chunks copied, 107 skipped
-		case strings.HasPrefix(line, "Copy complete, "):
-			logger.Println(line)
-			logMessage(logger, fmt.Sprint("  ", line))
-
-			// Save chunk data for inclusion into HTML portion of E-Mail message
-			re := regexp.MustCompile(`Copy complete, (\S+) total chunks, (\S+) chunks copied, (\S+) skipped`)
-			elements := re.FindStringSubmatch(line)
-			if len(elements) >= 4 {
-				copyEntry.chunkTotalCount = elements[1]
-				copyEntry.chunkCopyCount = elements[2]
-				copyEntry.chunkSkipCount = elements[3]
-			}
 		default:
 			logger.Println(line)
 		}
@@ -221,6 +207,33 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 		backupEntry.storage = backupInfo["name"]
 		backupEntry.duration = backupDuration
 		backupTable = append(backupTable, backupEntry)
+	}
+
+	return nil
+}
+
+func performDuplicacyCopy(logger *log.Logger, testArgs []string) error {
+	// Handling when processing output from "duplicacy backup" command
+	var copyEntry copyRevision
+
+	copyLogger := func(line string) {
+		switch {
+		// Copy complete, 107 total chunks, 0 chunks copied, 107 skipped
+		case strings.HasPrefix(line, "Copy complete, "):
+			logger.Println(line)
+			logMessage(logger, fmt.Sprint("  ", line))
+
+			// Save chunk data for inclusion into HTML portion of E-Mail message
+			re := regexp.MustCompile(`Copy complete, (\S+) total chunks, (\S+) chunks copied, (\S+) skipped`)
+			elements := re.FindStringSubmatch(line)
+			if len(elements) >= 4 {
+				copyEntry.chunkTotalCount = elements[1]
+				copyEntry.chunkCopyCount = elements[2]
+				copyEntry.chunkSkipCount = elements[3]
+			}
+		default:
+			logger.Println(line)
+		}
 	}
 
 	for i, copyInfo := range configFile.copyInfo {
