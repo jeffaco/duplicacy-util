@@ -3,9 +3,9 @@
 Table of contents:
 
 - [Explanation of Upgrade Policy](#explanation-of-upgrade-policy)
-- [Changes made in `v1.4`(#changes-made-in-v1.4)
-  - [Notifications](#v1.4-notifications)
-  - [Command Line Changes](#v1.4-command-line-changes]
+- [Changes made in `v1.4`](#changes-made-in-v14)
+  - [Notifications](#v14-notifications)
+  - [Command Line Changes](#v14-command-line-changes)
 
 ### Explanation of Upgrade Policy
 
@@ -30,10 +30,10 @@ this new setting, then you MUST update to the new `email` configuration.
 As a result, it is recommended to immediately incorporate updates to
 scripting or configuration files when upgrading to a new version.
 
-** Note: This file only describes incompatible changes made in a release,
+Note: This file only describes incompatible changes made in a release,
 not ALL changes made in a release. Refer to release notes on GitHub for a
 full description of all changes made, or new features that did not create
-a compatibility issue. **
+a compatibility issue.
 
 Finally, note that [README.md](README.md) only describes most current
 configurations. If you're running the master branch before releases,
@@ -150,7 +150,7 @@ Deprecated command line options:
 
 | Option | Purpose |
 | ------ | ------- |
-| -b | Performed a `duplicacy backup` operation. Use `-backup` instead. |
+| -b | Performed a `duplicacy backup` operation. Use `-backup -copy` instead. |
 | -c | Performed a `duplicacy check` operaiton. Use `-check` instead. |
 | -p | Performed a `duplicacy prune` operation. Use `-prune` instead. |
 | -tm | Triggered test email messages. Configure notifications in global configuration and use `-tn` instead. |
