@@ -6,6 +6,17 @@
 [duplicacy]: https://github.com/gilbertchen/duplicacy
 [viper]: https://github.com/spf13/viper
 
+[comment]: # (Links to Duplicacy documentation; subject to change)
+[other tools]: https://forum.duplicacy.com/t/scripts-and-utilities-index/1104
+[back up to multiple cloud providers]: https://forum.duplicacy.com/t/back-up-to-multiple-storages/1075
+[prune documentation]: https://forum.duplicacy.com/t/prune-command-details/1005
+[duplicacy backup]: https://forum.duplicacy.com/t/backup-command-details/1077
+[duplicacy copy]: https://forum.duplicacy.com/t/copy-command-details/1083
+[duplicacy prune]: https://forum.duplicacy.com/t/prune-command-details/1005
+[duplicacy check]: https://forum.duplicacy.com/t/check-command-details/1081
+[Retention specification]: https://forum.duplicacy.com/t/prune-command-details/1005
+[Duplicacy Wiki]: https://forum.duplicacy.com/t/duplicacy-user-guide/1197
+
 This repository contains utilities to run [Duplicacy][] on any platform supported by
 [Duplicacy][].
 
@@ -32,7 +43,7 @@ Table of contents:
 
 In short, `duplicacy-util` is a utility to run Duplicacy backups. While
 there are a number of
-[other tools](https://github.com/gilbertchen/duplicacy/wiki/Scripts-and-utilities-index)
+[other tools][]
 available to do similar things, `duplicacy-util` has a number of advantages:
 
 - It is completely portable. It's trivial to run on Windows, Mac OS/X,
@@ -152,7 +163,7 @@ The following fields are checked in the global configuration file:
 
 | Field Name          | Purpose                                              | Default Value                                   |
 | ------------------- | ---------------------------------------------------- | ----------------------------------------------- |
-| duplicacypath       | Path for the [Duplicacy] binary program              | "duplicacy" on your default path ($PATH)        |
+| duplicacypath       | Path for the [Duplicacy][] binary program            | "duplicacy" on your default path ($PATH)        |
 | lockdirectory       | Directory where temporary lock files are stored      | Storage directory, or $HOME/.duplicacy-util     |
 | logdirectory        | Directory where log files are stored                 | Storage directory, or $HOME/.duplicacy-util/log |
 | logfilecount        | Number of historical log files that should be stored | 5                                               |
@@ -180,10 +191,10 @@ notifications:
 
 | Field Name          | Purpose                                              | Default |
 | ------------------- | ---------------------------------------------------- | ------- |
-| fromAddress         | From address (i.e. from-user@domain.com)             | None    |
-| toAddress           | To address (i.e. to-user@domain.com)                 | None    |
-| serverHostname      | SMTP server (i.e. smtp@gmail.com)                    | None    |
-| serverPort          | Port of SMTP server (i.e. 465 or 587)                | None    |
+| fromAddress         | From address (i.e. `from-user@domain.com`)           | None    |
+| toAddress           | To address (i.e. `to-user@domain.com)`               | None    |
+| serverHostname      | SMTP server (i.e. `smtp@gmail.com)`                  | None    |
+| serverPort          | Port of SMTP server (i.e. `465` or `587`)            | None    |
 | authUsername        | Username for authentication with SMTP server         | None    |
 | authPassword        | Password for authentication with SMTP server         | None    |
 | acceptInsecureCerts | Accept insecure or self-signed server certificates   | false   |
@@ -233,8 +244,7 @@ See [Management of E-Mail Messages](#management-of-e-mail-messages), for E-Mail 
 The local configuration file (or repository configuration file) defines how to
 back up a specific repository. This file must be specified on the command line
 (discussed later). The repository-specific configuration file may take lists
-of storages if you
-[back up to multiple cloud providers](https://github.com/gilbertchen/duplicacy/wiki/Back-up-to-multiple-storages).
+of storages if you [back up to multiple cloud providers][].
 In the simple case, a configuration file can short, such as this:
 
 ```
@@ -259,7 +269,7 @@ This configuration shows that:
 - You have a repository, stored in /Volumes/Quicken,
 - That is backed up to storage named `b2`,
 - You should prune storage `b2` with `0:365 30:180 7:30 1:7`. See
-  [prune documentation](https://github.com/gilbertchen/duplicacy/wiki/prune)
+  [prune documentation][]
   for more information on how to specify `keep` tag.
 - When doing a `check` operation, you should check revisions in storage
   `b2`.
@@ -325,10 +335,10 @@ Sections in the repository configuration files consist of:
 
 | Section Name | Purpose                                                                                                                |
 | ------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| storage      | Storage names to back up for [duplicacy backup](https://github.com/gilbertchen/duplicacy/wiki/backup) operations\*     |
-| copy         | List of storage from-to pairs for [duplicacy copy](https://github.com/gilbertchen/duplicacy/wiki/copy) operations      |
-| prune        | List of storage names to prune for [duplicacy prune](https://github.com/gilbertchen/duplicacy/wiki/prune) operations\* |
-| check        | List of storage names to check for [duplicacy check](https://github.com/gilbertchen/duplicacy/wiki/check) operations\* |
+| storage      | Storage names to back up for [duplicacy backup][] operations\*     |
+| copy         | List of storage from-to pairs for [duplicacy copy][] operations      |
+| prune        | List of storage names to prune for [duplicacy prune][] operations\* |
+| check        | List of storage names to check for [duplicacy check][] operations\* |
 
 Note that `*` denotes that this section is mandatory and MUST be specified
 in the configuration file.
@@ -358,10 +368,10 @@ Fields in the `copy` section (if one exists), are:
 
 Fields in the `prune` section are:
 
-| Field Name | Purpose                                                                        | Required | Default Value |
-| ---------- | ------------------------------------------------------------------------------ | -------- | ------------- |
-| storage    | Storage name to prune                                                          | Yes      | None          |
-| keep       | [Retention specification](https://github.com/gilbertchen/duplicacy/wiki/prune) | Yes      | None          |
+| Field Name | Purpose                       | Required | Default Value |
+| ---------- | ----------------------------- | -------- | ------------- |
+| storage    | Storage name to prune         | Yes      | None          |
+| keep       | [Retention specification][]   | Yes      | None          |
 
 Finally, fields in the `check` section are:
 
@@ -488,7 +498,7 @@ Azure. It also performed the first backup, taking care of final password prompts
 After this, `duplicacy-util` should function properly, and [Duplicacy][] should
 not prompt for passwords.
 
-You should study the [Duplicacy Wiki](https://github.com/gilbertchen/duplicacy/wiki)
+You should study the [Duplicacy Wiki][]
 carefully, the documentation is quite good. It explains how [Duplicacy][] works
 and various commands that [Duplicacy][] supports.
 
