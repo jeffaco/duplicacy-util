@@ -1,0 +1,31 @@
+repository: .
+
+storage:
+    1:
+        name: b2
+        threads: 10
+    2:
+        name: azure-direct
+        threads: 5
+
+copy:
+    1:
+        from: b2
+        to: azure
+        threads: 10
+
+prune:
+    1:
+        storage: b2
+        keep: "0:365 30:180 7:30 1:7"
+    2:
+        storage: azure
+        keep: "0:365 30:180 7:30 1:7"
+
+check:
+    1:
+        storage: b2
+        all: true
+    2:
+        storage: azure
+        all: true
