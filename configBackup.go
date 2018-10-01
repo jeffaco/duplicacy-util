@@ -75,161 +75,90 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 		logError(nil, fmt.Sprint("Error: ", err))
 	}
 
-	// Populate backup information from storages
-	if v.IsSet("storage") {
-		for i := 1; ; i++ {
-			var storageMap = make(map[string]string)
+	// Populate information from configuration
+	config.backupInfo = readSection(v, "storage")
+	config.copyInfo = readSection(v, "copy")
+	config.pruneInfo = readSection(v, "prune")
+	config.checkInfo = readSection(v, "check")
 
-			key := "storage." + strconv.Itoa(i)
-			if v.IsSet(key) {
-				if v.IsSet(key + ".name") {
-					storageMap["name"] = v.GetString(key + ".name")
-				} else {
-					err = errors.New("missing mandatory storage field: " + key + ".name")
-					logError(nil, fmt.Sprint("Error: ", err))
-				}
-				// Default to -threads:1 if not otherwise specified
-				threads := v.GetInt(key + ".threads")
-				if threads != 0 {
-					storageMap["threads"] = strconv.Itoa(threads)
-				} else {
-					storageMap["threads"] = "1"
-				}
-				// Default to vss:false if not otherwise specified
-				vssFlag := v.GetBool(key + ".vss")
-				if vssFlag {
-					storageMap["vss"] = "true"
-				} else {
-					storageMap["vss"] = "false"
-				}
-				// Default to vssTimeout:"" if not otherwise specified
-				vssTimeout := v.GetInt(key + ".vssTimeout")
-				if vssTimeout != 0 {
-					storageMap["vssTimeout"] = strconv.Itoa(vssTimeout)
-				} else {
-					storageMap["vssTimeout"] = ""
-				}
-				config.backupInfo = append(config.backupInfo, storageMap)
-			} else {
-				break
-			}
-		}
-
-		if len(config.backupInfo) == 0 {
-			err = errors.New("no storage locations defined in configuration")
-			logError(nil, fmt.Sprint("Error: ", err))
-		}
-	} else {
+	// Validate, set defaults
+	if len(config.backupInfo) == 0 {
 		err = errors.New("no storage locations defined in configuration")
 		logError(nil, fmt.Sprint("Error: ", err))
-	}
-
-	// Populate copy information
-	if v.IsSet("copy") {
-		for i := 1; ; i++ {
-			var copyMap = make(map[string]string)
-
-			key := "copy." + strconv.Itoa(i)
-			if v.IsSet(key) {
-				if v.IsSet(key+".from") && v.IsSet(key+".to") {
-					copyMap["from"] = v.GetString(key + ".from")
-					copyMap["to"] = v.GetString(key + ".to")
-				} else {
-					err = errors.New("missing mandatory storage field: " + key + ".from or " + key + ".to")
-					logError(nil, fmt.Sprint("Error: ", err))
-				}
-				// Default to -threads:1 if not otherwise specified
-				threads := v.GetInt(key + ".threads")
-				if threads != 0 {
-					copyMap["threads"] = strconv.Itoa(threads)
-				} else {
-					copyMap["threads"] = "1"
-				}
-				config.copyInfo = append(config.copyInfo, copyMap)
-			} else {
-				break
-			}
-		}
-
-		if len(config.copyInfo) == 0 {
-			err = errors.New("no copy locations defined in configuration")
-			logError(nil, fmt.Sprint("Error: ", err))
-		}
-	}
-
-	// Populate prune information
-	if v.IsSet("prune") {
-		for i := 1; ; i++ {
-			var pruneMap = make(map[string]string)
-
-			key := "prune." + strconv.Itoa(i)
-			if v.IsSet(key) {
-				if v.IsSet(key + ".storage") {
-					pruneMap["storage"] = v.GetString(key + ".storage")
-				} else {
-					err = errors.New("Missing mandatory storage field: " + key + ".storage")
-					logError(nil, fmt.Sprint("Error: ", err))
-				}
-				if v.IsSet(key + ".keep") {
-					// Split/join to get "-keep " before each element
-					splitList := strings.Split(v.GetString(key+".keep"), " ")
-					for i, element := range splitList {
-						splitList[i] = "-keep " + element
-					}
-
-					pruneMap["keep"] = strings.Join(splitList, " ")
-				} else {
-					err = errors.New("Missing mandatory storage field: " + key + ".keep")
-					logError(nil, fmt.Sprint("Error: ", err))
-				}
-				config.pruneInfo = append(config.pruneInfo, pruneMap)
-			} else {
-				break
-			}
-		}
-
-		if len(config.pruneInfo) == 0 {
-			err = errors.New("no prune locations defined in configuration")
-			logError(nil, fmt.Sprint("Error: ", err))
-		}
 	} else {
+		for i, bi := range config.backupInfo {
+			if bi["name"] == "" {
+				err = fmt.Errorf("missing mandatory storage field: %d.name", i)
+				logError(nil, fmt.Sprint("Error: ", err))
+			}
+			// Default to -threads:1 if not otherwise specified
+			if bi["threads"] == "" || bi["threads"] == "0" {
+				bi["threads"] = "1"
+			}
+			// Default to vss:false if not otherwise specified
+			if bi["vssFlag"] == "" {
+				bi["vssFlag"] = "false"
+			}
+			// Default to vssTimeout:"" if not otherwise specified
+			if bi["vssTimeout"] == "" {
+				bi["vssTimeout"] = "false"
+			}
+		}
+	}
+
+	for i, ci := range config.copyInfo {
+		if ci["from"] == "" {
+			err = fmt.Errorf("missing mandatory from field: %d.from", i)
+			logError(nil, fmt.Sprint("Error: ", err))
+		}
+		if ci["to"] == "" {
+			err = fmt.Errorf("missing mandatory to field: %d.to", i)
+			logError(nil, fmt.Sprint("Error: ", err))
+		}
+		// Default to -threads:1 if not otherwise specified
+		if ci["threads"] == "" || ci["threads"] == "0" {
+			ci["threads"] = "1"
+		}
+	}
+
+	if len(config.pruneInfo) == 0 {
 		err = errors.New("no prune locations defined in configuration")
 		logError(nil, fmt.Sprint("Error: ", err))
-	}
-
-	// Populate check information
-	if v.IsSet("check") {
-		for i := 1; ; i++ {
-			var checkMap = make(map[string]string)
-
-			key := "check." + strconv.Itoa(i)
-			if v.IsSet(key) {
-				if v.IsSet(key + ".storage") {
-					checkMap["storage"] = v.GetString(key + ".storage")
-				} else {
-					err = errors.New("missing mandatory storage field: " + key + ".storage")
-					logError(nil, fmt.Sprint("Error: ", err))
-				}
-				// See if all is specified
-				allFlag := v.GetBool(key + ".all")
-				if allFlag {
-					checkMap["all"] = "true"
-				} else {
-					checkMap["all"] = "false"
-				}
-				config.checkInfo = append(config.checkInfo, checkMap)
+	} else {
+		for i, pi := range config.pruneInfo {
+			if pi["storage"] == "" {
+				err = fmt.Errorf("missing mandatory prune field: %d.from", i)
+				logError(nil, fmt.Sprint("Error: ", err))
+			}
+			if pi["keep"] == "" {
+				err = fmt.Errorf("missing mandatory prune field: %d.keep", i)
+				logError(nil, fmt.Sprint("Error: ", err))
 			} else {
-				break
+				// Split/join to get "-keep " before each element
+				splitList := strings.Split(pi["keep"], " ")
+				for i, element := range splitList {
+					splitList[i] = "-keep " + element
+				}
+
+				pi["keep"] = strings.Join(splitList, " ")
 			}
 		}
+	}
 
-		if len(config.checkInfo) == 0 {
-			err = errors.New("no check locations defined in configuration")
-			logError(nil, fmt.Sprint("Error: ", err))
-		}
-	} else {
+	if len(config.checkInfo) == 0 {
 		err = errors.New("no check locations defined in configuration")
 		logError(nil, fmt.Sprint("Error: ", err))
+	} else {
+		for i, ci := range config.checkInfo {
+			if ci["storage"] == "" {
+				err = fmt.Errorf("missing mandatory check field: %d.storage", i)
+				logError(nil, fmt.Sprint("Error: ", err))
+			}
+			// Default to all:false if not otherwise specified
+			if ci["all"] == "" {
+				ci["all"] = "false"
+			}
+		}
 	}
 
 	// Generate verbose/debug output if requested (assuming no fatal errors)
@@ -277,4 +206,50 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 	}
 
 	return err
+}
+
+func readSection(viper *viper.Viper, sectionKey string) []map[string]string {
+	if viper.IsSet(sectionKey) {
+		section := make([]interface{}, 0)
+		if viper.IsSet(sectionKey + ".1") {
+			// Keyed by number
+			for i := 1; ; i++ {
+				key := sectionKey + "." + strconv.Itoa(i)
+				if viper.IsSet(key) {
+					section = append(section, viper.Get(key))
+				} else {
+					break
+				}
+			}
+		} else {
+			// Array
+			section = viper.Get(sectionKey).([]interface{})
+		}
+
+		return coerceToArrayOfMapStringString(section[0:])
+	}
+	return nil
+}
+
+func coerceToArrayOfMapStringString(slice []interface{}) []map[string]string {
+	section := make([]map[string]string, len(slice))
+	for i, item := range slice {
+		itemMap := make(map[string]string)
+		switch item.(type) {
+		case map[string]interface{}:
+			for key, value := range item.(map[string]interface{}) {
+				strKey := key
+				strValue := fmt.Sprintf("%v", value)
+				itemMap[strKey] = strValue
+			}
+		case map[interface{}]interface{}:
+			for key, value := range item.(map[interface{}]interface{}) {
+				strKey := fmt.Sprintf("%v", key)
+				strValue := fmt.Sprintf("%v", value)
+				itemMap[strKey] = strValue
+			}
+		}
+		section[i] = itemMap
+	}
+	return section
 }
