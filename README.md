@@ -251,17 +251,14 @@ In the simple case, a configuration file can short, such as this:
 repository: /Volumes/Quicken
 
 storage:
-    1:
-        name: b2
+    -   name: b2
 
 prune:
-    1:
-        storage: b2
+    -   storage: b2
         keep: "0:365 30:180 7:30 1:7"
 
 check:
-    1:
-        storage: b2
+    -   storage: b2
 ```
 
 This configuration shows that:
@@ -284,33 +281,26 @@ more involved:
 repository: /Volumes/Quicken
 
 storage:
-    1:
-        name: b2
+    -   name: b2
         threads: 10
-    2:
-        name: azure-direct
+    -   name: azure-direct
         threads: 5
 
 copy:
-    1:
-        from: b2
+    -   from: b2
         to: azure
         threads: 10
 
 prune:
-    1:
-        storage: b2
+    -   storage: b2
         keep: "0:365 30:180 7:30 1:7"
-    2:
-        storage: azure
+    -   storage: azure
         keep: "0:365 30:180 7:30 1:7"
 
 check:
-    1:
-        storage: b2
+    -   storage: b2
         all: true
-    2:
-        storage: azure
+    -   storage: azure
         all: true
 ```
 
@@ -343,11 +333,12 @@ Sections in the repository configuration files consist of:
 Note that `*` denotes that this section is mandatory and MUST be specified
 in the configuration file.
 
-The `storage` list contains a list of repositories to back up. Note that the
-list may be as long as required. `duplicacy-util` will continue loading
-monotonically increasing section numbers until no additional sections are
-found (i.e. 1, 2, 3). This is conistent with all sections in the repository
-configuration file.
+The `storage` list contains a list of repositories to back up to. Note that
+the list may be as long as required. `duplicacy-util` will continue loading
+storages until no additional storages are found. Each storage should be
+differentiated with the prior storage with a `-` character (to signify a new
+section).
+This is conistent with all sections in the repository configuration file.
 
 Fields in the `storage` section are:
 
