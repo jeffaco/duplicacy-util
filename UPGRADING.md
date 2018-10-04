@@ -3,6 +3,7 @@
 Table of contents:
 
 - [Explanation of Upgrade Policy](#explanation-of-upgrade-policy)
+- [Changes made in `v1.5`](#changes-made-in-v15)
 - [Changes made in `v1.4`](#changes-made-in-v14)
   - [Notifications](#v14-notifications)
   - [Command Line Changes](#v14-command-line-changes)
@@ -39,6 +40,41 @@ Finally, note that [README.md](README.md) only describes most current
 configurations. If you're running the master branch before releases,
 you should monitor issues raised and commits made so you know when changes
 are made to the master branch.
+
+### Changes made in v1.5
+
+Incompatible changes in `v1.5` involve the backup configuration file
+format.
+
+The backup configuration file used to have numbered sections for backup,
+copy, prune, and check sections as follows:
+
+```cgo
+storage:
+    1:
+        name: b2
+        threads: 10
+    2:
+        name: azure-direct
+        threads: 5
+    3:
+        name: default-threads
+```
+
+The numbers (i.e. `1:`, `2:`, `3:`) are no longer necessary, and the
+section should now be formatted like:
+
+```cgo
+storage:
+    - name: b2
+      threads: 10
+    - name: azure-direct
+      threads: 5
+    - name: default-threads
+```
+
+Similar changes should be made to the `copy`, `prune`, and `check`
+sections.
 
 ### Changes made in v1.4
 
