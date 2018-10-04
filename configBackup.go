@@ -24,6 +24,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var oldBackupFileFormat = false
+
 type configurationFile struct {
 	// Name (without extension) of the configuration file
 	configFilename string
@@ -76,10 +78,10 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 	}
 
 	// Populate information from configuration
-	config.backupInfo = readSection(v, "storage")
-	config.copyInfo = readSection(v, "copy")
-	config.pruneInfo = readSection(v, "prune")
-	config.checkInfo = readSection(v, "check")
+	config.backupInfo = readSection(v, config.configFilename, "storage")
+	config.copyInfo = readSection(v, config.configFilename, "copy")
+	config.pruneInfo = readSection(v, config.configFilename, "prune")
+	config.checkInfo = readSection(v, config.configFilename, "check")
 
 	// Validate, set defaults
 	if len(config.backupInfo) == 0 {
@@ -208,10 +210,16 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 	return err
 }
 
-func readSection(viper *viper.Viper, sectionKey string) []map[string]string {
+func readSection(viper *viper.Viper, filename string, sectionKey string) []map[string]string {
 	if viper.IsSet(sectionKey) {
 		section := make([]interface{}, 0)
 		if viper.IsSet(sectionKey + ".1") {
+			// Have we issued our global warning before; if not, do so
+			if oldBackupFileFormat == false {
+				oldBackupFileFormat = true
+				logError(nil, "WARNING: Upgrade format of backup configuration "+filename+" to new format!")
+			}
+
 			// Keyed by number
 			for i := 1; ; i++ {
 				key := sectionKey + "." + strconv.Itoa(i)
