@@ -348,6 +348,7 @@ Fields in the `storage` section are:
 | threads    | Number of threads to use for backup                                             | No       | 1             |
 | vss        | Enable Volume Shadow Copy service                                               | No       | false         |
 | vssTimeout | the timeout in seconds to wait for the Volume Shadow Copy operation to complete | No       | None          |
+| quote      | Specify additional duplicacy parameters (for advanced users only)               | No       | None          |
 
 Fields in the `copy` section (if one exists), are:
 
@@ -356,6 +357,7 @@ Fields in the `copy` section (if one exists), are:
 | from       | Storage name to copy from         | Yes      | None          |
 | to         | Storage name to copy to           | Yes      | None          |
 | threads    | Number of threads to use for copy | No       | 1             |
+| quote      | Specify additional duplicacy parameters (for advanced users only) | No | None |
 
 Fields in the `prune` section are:
 
@@ -364,6 +366,7 @@ Fields in the `prune` section are:
 | storage    | Storage name to prune         | Yes      | None          |
 | keep       | [Retention specification][]   | Yes      | None          |
 | threads    | Number of threads to use (requires duplicacy CLI v2.1.1 or later) | No | 1 |
+| quote      | Specify additional duplicacy parameters (for advanced users only) | No | None |
 
 Finally, fields in the `check` section are:
 
@@ -371,6 +374,20 @@ Finally, fields in the `check` section are:
 | ---------- | ------------------------------- | -------- | ------------- |
 | storage    | Storage name to check           | Yes      | None          |
 | all        | Should all revisions be checked | No       | false         |
+| quote      | Specify additional duplicacy parameters (for advanced users only) | No | None |
+
+Note that all sections support a "quote" option. This is for advanced
+usages only, and you should only use this in conjunction with `-v -d`
+(verbose debug). This allows you to specify additional parameters to
+pass to duplicacy commands. For example, if you needed the `duplicacy
+check` command to specify the `-fossels -resurrect` options, you could
+do so by including something like:
+
+```
+quote: "-fossels -resurrect"
+```
+
+in the backup configuration file for section `check`.
 
 Once you have the configuration files set up, running `duplicacy-util` is
 simple. Just use a command like:

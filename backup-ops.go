@@ -198,8 +198,15 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 			}
 		}
 
-		logMessage(logger, fmt.Sprint("Backing up to storage ", backupInfo["name"],
-			vssFlags, " with ", threadCount, " threads"))
+		quoteFlags := ""
+		if _, ok := backupInfo["quote"]; ok == true {
+			if backupInfo["quote"] != "" {
+				quoteFlags = " " + backupInfo["quote"]
+				cmdArgs = append(cmdArgs, strings.Split(backupInfo["quote"], " ")...)
+			}
+		}
+
+		logMessage(logger, fmt.Sprintf("Backing up to storage %s%s with %s threads%s", backupInfo["name"], vssFlags, threadCount, quoteFlags))
 
 		// Execute duplicacy
 		if debugFlag {
@@ -274,8 +281,17 @@ func performDuplicacyCopy(logger *log.Logger, testArgs []string) error {
 				cmdArgs = append(cmdArgs, "-threads", threadCount)
 			}
 		}
-		logMessage(logger, fmt.Sprint("Copying from storage ", copyInfo["from"],
-			" to storage ", copyInfo["to"], " with ", threadCount, " threads"))
+
+		quoteFlags := ""
+		if _, ok := copyInfo["quote"]; ok == true {
+			if copyInfo["quote"] != "" {
+				quoteFlags = " " + copyInfo["quote"]
+				cmdArgs = append(cmdArgs, strings.Split(copyInfo["quote"], " ")...)
+			}
+		}
+
+		logMessage(logger, fmt.Sprintf("Copying from storage %s to storage %s with %s threads%s", copyInfo["from"], copyInfo["to"], threadCount, quoteFlags))
+
 		if debugFlag {
 			logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 		}
@@ -329,7 +345,16 @@ func performDuplicacyPrune(logger *log.Logger, testArgs []string) error {
 				cmdArgs = append(cmdArgs, "-threads", threadCount)
 			}
 		}
-		logMessage(logger, fmt.Sprint("Pruning storage ", pruneInfo["storage"], "using ", threadCount, " thread(s)"))
+
+		quoteFlags := ""
+		if _, ok := pruneInfo["quote"]; ok == true {
+			if pruneInfo["quote"] != "" {
+				quoteFlags = " " + pruneInfo["quote"]
+				cmdArgs = append(cmdArgs, strings.Split(pruneInfo["quote"], " ")...)
+			}
+		}
+
+		logMessage(logger, fmt.Sprintf("Pruning storage %s using %s thread(s)%s", pruneInfo["storage"], threadCount, quoteFlags))
 
 		// Execute duplicacy
 		if debugFlag {
@@ -371,7 +396,16 @@ func performDuplicacyCheck(logger *log.Logger, testArgs []string) error {
 				cmdArgs = append(cmdArgs, "-all")
 			}
 		}
-		logMessage(logger, fmt.Sprint("Checking storage ", checkInfo["storage"], allText))
+
+		quoteFlags := ""
+		if _, ok := checkInfo["quote"]; ok == true {
+			if checkInfo["quote"] != "" {
+				quoteFlags = " " + checkInfo["quote"]
+				cmdArgs = append(cmdArgs, strings.Split(checkInfo["quote"], " ")...)
+			}
+		}
+
+		logMessage(logger, fmt.Sprintf("Checking storage %s%s%s", checkInfo["storage"], allText, quoteFlags))
 
 		// Execute duplicacy
 		if debugFlag {
