@@ -172,19 +172,34 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 		}
 
 		// Build remainder of command arguments
-		cmdArgs = append(cmdArgs, "backup", "-storage", backupInfo["name"], "-threads", backupInfo["threads"], "-stats")
+		cmdArgs = append(cmdArgs, "backup", "-storage", backupInfo["name"], "-stats")
+
+		// Handle optional parameters that may be specified
+		threadCount := "1"
+		if _, ok := backupInfo["threads"]; ok == true {
+			if backupInfo["threads"] != "" {
+				threadCount = backupInfo["threads"]
+				cmdArgs = append(cmdArgs, "-threads", threadCount)
+			}
+		}
+
 		vssFlags := ""
-		if backupInfo["vss"] == "true" {
-			cmdArgs = append(cmdArgs, "-vss")
-			vssFlags = " -vss"
-			if backupInfo["vssTimeout"] != "" {
-				cmdArgs = append(cmdArgs, "-vss-timeout", backupInfo["vssTimeout"])
-				vssFlags = fmt.Sprintf("%s -vss-timeout %s", vssFlags, backupInfo["vssTimeout"])
+		if _, ok := backupInfo["vss"]; ok == true {
+			if backupInfo["vss"] == "true" {
+				cmdArgs = append(cmdArgs, "-vss")
+
+				vssFlags = " -vss"
+				if _, ok := backupInfo["vssTimeout"]; ok == true {
+					if backupInfo["vssTimeout"] != "" {
+						cmdArgs = append(cmdArgs, "-vss-timeout", backupInfo["vssTimeout"])
+						vssFlags = fmt.Sprintf("%s -vss-timeout %s", vssFlags, backupInfo["vssTimeout"])
+					}
+				}
 			}
 		}
 
 		logMessage(logger, fmt.Sprint("Backing up to storage ", backupInfo["name"],
-			vssFlags, " with ", backupInfo["threads"], " threads"))
+			vssFlags, " with ", threadCount, " threads"))
 
 		// Execute duplicacy
 		if debugFlag {
@@ -249,10 +264,18 @@ func performDuplicacyCopy(logger *log.Logger, testArgs []string) error {
 		}
 
 		// Build remainder of command arguments
-		cmdArgs = append(cmdArgs, "copy", "-threads", copyInfo["threads"],
-			"-from", copyInfo["from"], "-to", copyInfo["to"])
+		cmdArgs = append(cmdArgs, "copy", "-from", copyInfo["from"], "-to", copyInfo["to"])
+
+		// Handle optional parameters that may be specified
+		threadCount := "1"
+		if _, ok := copyInfo["threads"]; ok == true {
+			if copyInfo["threads"] != "" {
+				threadCount = copyInfo["threads"]
+				cmdArgs = append(cmdArgs, "-threads", threadCount)
+			}
+		}
 		logMessage(logger, fmt.Sprint("Copying from storage ", copyInfo["from"],
-			" to storage ", copyInfo["to"], " with ", copyInfo["threads"], " threads"))
+			" to storage ", copyInfo["to"], " with ", threadCount, " threads"))
 		if debugFlag {
 			logMessage(logger, fmt.Sprint("Executing: ", duplicacyPath, cmdArgs))
 		}
@@ -297,7 +320,16 @@ func performDuplicacyPrune(logger *log.Logger, testArgs []string) error {
 		// Build remainder of command arguments
 		cmdArgs = append(testArgs, "prune", "-all", "-storage", pruneInfo["storage"])
 		cmdArgs = append(cmdArgs, strings.Split(pruneInfo["keep"], " ")...)
-		logMessage(logger, fmt.Sprint("Pruning storage ", pruneInfo["storage"]))
+
+		// Handle optional parameters that may be specified
+		threadCount := "1"
+		if _, ok := pruneInfo["threads"]; ok == true {
+			if pruneInfo["threads"] != "" {
+				threadCount = pruneInfo["threads"]
+				cmdArgs = append(cmdArgs, "-threads", threadCount)
+			}
+		}
+		logMessage(logger, fmt.Sprint("Pruning storage ", pruneInfo["storage"], "using ", threadCount, " thread(s)"))
 
 		// Execute duplicacy
 		if debugFlag {
@@ -330,10 +362,16 @@ func performDuplicacyCheck(logger *log.Logger, testArgs []string) error {
 
 		// Build remainder of command arguments
 		cmdArgs = append(cmdArgs, "check", "-storage", checkInfo["storage"])
-		if checkInfo["all"] == "true" {
-			cmdArgs = append(cmdArgs, "-all")
+
+		// Handle optional parameters that may be specified
+		allText := ""
+		if _, ok := checkInfo["all"]; ok == true {
+			if checkInfo["all"] == "true" {
+				allText = " with -all"
+				cmdArgs = append(cmdArgs, "-all")
+			}
 		}
-		logMessage(logger, fmt.Sprint("Checking storage ", checkInfo["storage"]))
+		logMessage(logger, fmt.Sprint("Checking storage ", checkInfo["storage"], allText))
 
 		// Execute duplicacy
 		if debugFlag {

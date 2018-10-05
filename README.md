@@ -363,6 +363,7 @@ Fields in the `prune` section are:
 | ---------- | ----------------------------- | -------- | ------------- |
 | storage    | Storage name to prune         | Yes      | None          |
 | keep       | [Retention specification][]   | Yes      | None          |
+| threads    | Number of threads to use (requires duplicacy CLI v2.1.1 or later) | No | 1 |
 
 Finally, fields in the `check` section are:
 

@@ -93,18 +93,6 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 				err = fmt.Errorf("missing mandatory storage field: %d.name", i)
 				logError(nil, fmt.Sprint("Error: ", err))
 			}
-			// Default to -threads:1 if not otherwise specified
-			if bi["threads"] == "" || bi["threads"] == "0" {
-				bi["threads"] = "1"
-			}
-			// Default to vss:false if not otherwise specified
-			if bi["vssFlag"] == "" {
-				bi["vssFlag"] = "false"
-			}
-			// Default to vssTimeout:"" if not otherwise specified
-			if bi["vssTimeout"] == "" {
-				bi["vssTimeout"] = "false"
-			}
 		}
 	}
 
@@ -117,33 +105,29 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 			err = fmt.Errorf("missing mandatory to field: %d.to", i)
 			logError(nil, fmt.Sprint("Error: ", err))
 		}
-		// Default to -threads:1 if not otherwise specified
-		if ci["threads"] == "" || ci["threads"] == "0" {
-			ci["threads"] = "1"
-		}
 	}
 
 	if len(config.pruneInfo) == 0 {
 		err = errors.New("no prune locations defined in configuration")
 		logError(nil, fmt.Sprint("Error: ", err))
-	} else {
-		for i, pi := range config.pruneInfo {
-			if pi["storage"] == "" {
-				err = fmt.Errorf("missing mandatory prune field: %d.from", i)
-				logError(nil, fmt.Sprint("Error: ", err))
-			}
-			if pi["keep"] == "" {
-				err = fmt.Errorf("missing mandatory prune field: %d.keep", i)
-				logError(nil, fmt.Sprint("Error: ", err))
-			} else {
-				// Split/join to get "-keep " before each element
-				splitList := strings.Split(pi["keep"], " ")
-				for i, element := range splitList {
-					splitList[i] = "-keep " + element
-				}
+	}
 
-				pi["keep"] = strings.Join(splitList, " ")
+	for i, pi := range config.pruneInfo {
+		if pi["storage"] == "" {
+			err = fmt.Errorf("missing mandatory prune field: %d.from", i)
+			logError(nil, fmt.Sprint("Error: ", err))
+		}
+		if pi["keep"] == "" {
+			err = fmt.Errorf("missing mandatory prune field: %d.keep", i)
+			logError(nil, fmt.Sprint("Error: ", err))
+		} else {
+			// Split/join to get "-keep " before each element
+			splitList := strings.Split(pi["keep"], " ")
+			for i, element := range splitList {
+				splitList[i] = "-keep " + element
 			}
+
+			pi["keep"] = strings.Join(splitList, " ")
 		}
 	}
 
@@ -155,10 +139,6 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 			if ci["storage"] == "" {
 				err = fmt.Errorf("missing mandatory check field: %d.storage", i)
 				logError(nil, fmt.Sprint("Error: ", err))
-			}
-			// Default to all:false if not otherwise specified
-			if ci["all"] == "" {
-				ci["all"] = "false"
 			}
 		}
 	}
@@ -173,13 +153,21 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 			logMessage(nil, "Backup Information:")
 			logMessage(nil, fmt.Sprintf("  Num\t%-20s%s", "Storage", "Threads"))
 			for i := range config.backupInfo {
-				logMessage(nil, fmt.Sprintf("  %2d\t%-20s   %-2s", i+1, config.backupInfo[i]["name"], config.backupInfo[i]["threads"]))
+				var localThreads string
+				if _, ok := config.backupInfo[i]["threads"]; ok == true {
+					localThreads = config.backupInfo[i]["threads"]
+				}
+				logMessage(nil, fmt.Sprintf("  %2d\t%-20s   %-2s", i+1, config.backupInfo[i]["name"], localThreads))
 			}
 			if len(config.copyInfo) != 0 {
 				logMessage(nil, "Copy Information:")
 				logMessage(nil, fmt.Sprintf("  Num\t%-20s%-20s%s", "From", "To", "Threads"))
 				for i := range config.copyInfo {
-					logMessage(nil, fmt.Sprintf("  %2d\t%-20s%-20s   %-2s", i+1, config.copyInfo[i]["from"], config.copyInfo[i]["to"], config.copyInfo[i]["threads"]))
+					var localThreads string
+					if _, ok := config.copyInfo[i]["threads"]; ok == true {
+						localThreads = config.copyInfo[i]["threads"]
+					}
+					logMessage(nil, fmt.Sprintf("  %2d\t%-20s%-20s   %-2s", i+1, config.copyInfo[i]["from"], config.copyInfo[i]["to"], localThreads))
 				}
 			}
 			logMessage(nil, "")
@@ -193,7 +181,11 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 			logMessage(nil, "Check Information:")
 			logMessage(nil, fmt.Sprintf("  Num\t%-20s%s", "Storage", "All Snapshots"))
 			for i := range config.checkInfo {
-				logMessage(nil, fmt.Sprintf("  %2d\t%-20s    %-2s", i+1, config.checkInfo[i]["storage"], config.checkInfo[i]["all"]))
+				var checkAll string
+				if _, ok := config.checkInfo[i]["all"]; ok == true {
+					checkAll = "true"
+				}
+				logMessage(nil, fmt.Sprintf("  %2d\t%-20s    %-2s", i+1, config.checkInfo[i]["storage"], checkAll))
 			}
 			logMessage(nil, "")
 		}

@@ -21,9 +21,9 @@ func TestValidConfigWithNumberedKeys(t *testing.T) {
 
 	// Verify results of the configuration file load for backupInfo
 	var backupInfo = []map[string]string{
-		{"name": "b2", "threads": "10", "vssFlag": "false", "vssTimeout": "false"},
-		{"name": "azure-direct", "threads": "5", "vssFlag": "false", "vssTimeout": "false"},
-		{"name": "default-threads", "threads": "1", "vssFlag": "false", "vssTimeout": "false"},
+		{"name": "b2", "threads": "10"},
+		{"name": "azure-direct", "threads": "5"},
+		{"name": "default-threads"},
 	}
 
 	if reflect.DeepEqual(backupInfo, configFile.backupInfo) == false {
@@ -33,7 +33,7 @@ func TestValidConfigWithNumberedKeys(t *testing.T) {
 	// Verify results of the configuration file load for copyInfo
 	var copyInfo = []map[string]string{
 		{"from": "b2", "to": "azure", "threads": "10"},
-		{"from": "b2", "to": "default-threads", "threads": "1"},
+		{"from": "b2", "to": "default-threads"},
 	}
 
 	if reflect.DeepEqual(copyInfo, configFile.copyInfo) == false {
@@ -53,11 +53,11 @@ func TestValidConfigWithNumberedKeys(t *testing.T) {
 	// Verify results of the configuration file load for checkInfo
 	var checkInfo = []map[string]string{
 		{"storage": "b2", "all": "true"},
-		{"storage": "azure", "all": "false"},
+		{"storage": "azure"},
 	}
 
 	if reflect.DeepEqual(checkInfo, configFile.checkInfo) == false {
-		t.Error("pruneInfo should have been equal, expected:", checkInfo, ", received:", configFile.checkInfo)
+		t.Error("checkInfo should have been equal, expected:", checkInfo, ", received:", configFile.checkInfo)
 	}
 }
 
@@ -77,9 +77,9 @@ func TestValidConfigWithArray(t *testing.T) {
 
 	// Verify results of the configuration file load for backupInfo
 	var backupInfo = []map[string]string{
-		{"name": "b2", "threads": "10", "vssFlag": "false", "vssTimeout": "false"},
-		{"name": "azure-direct", "threads": "5", "vssFlag": "false", "vssTimeout": "false"},
-		{"name": "default-threads", "threads": "1", "vssFlag": "false", "vssTimeout": "false"},
+		{"name": "b2", "threads": "10"},
+		{"name": "azure-direct", "threads": "5"},
+		{"name": "default-threads"},
 	}
 
 	if reflect.DeepEqual(backupInfo, configFile.backupInfo) == false {
@@ -89,7 +89,7 @@ func TestValidConfigWithArray(t *testing.T) {
 	// Verify results of the configuration file load for copyInfo
 	var copyInfo = []map[string]string{
 		{"from": "b2", "to": "azure", "threads": "10"},
-		{"from": "b2", "to": "default-threads", "threads": "1"},
+		{"from": "b2", "to": "default-threads"},
 	}
 
 	if reflect.DeepEqual(copyInfo, configFile.copyInfo) == false {
@@ -109,11 +109,11 @@ func TestValidConfigWithArray(t *testing.T) {
 	// Verify results of the configuration file load for checkInfo
 	var checkInfo = []map[string]string{
 		{"storage": "b2", "all": "true"},
-		{"storage": "azure", "all": "false"},
+		{"storage": "azure"},
 	}
 
 	if reflect.DeepEqual(checkInfo, configFile.checkInfo) == false {
-		t.Error("pruneInfo should have been equal, expected:", checkInfo, ", received:", configFile.checkInfo)
+		t.Error("checkInfo should have been equal, expected:", checkInfo, ", received:", configFile.checkInfo)
 	}
 }
 
@@ -133,9 +133,9 @@ func TestValidConfig_NoCopySection(t *testing.T) {
 
 	// Verify results of the configuration file load for backupInfo
 	var backupInfo = []map[string]string{
-		{"name": "b2", "threads": "10", "vssFlag": "false", "vssTimeout": "false"},
-		{"name": "azure-direct", "threads": "5", "vssFlag": "false", "vssTimeout": "false"},
-		{"name": "default-threads", "threads": "1", "vssFlag": "false", "vssTimeout": "false"},
+		{"name": "b2", "threads": "10"},
+		{"name": "azure-direct", "threads": "5"},
+		{"name": "default-threads"},
 	}
 
 	if reflect.DeepEqual(backupInfo, configFile.backupInfo) == false {
@@ -162,11 +162,11 @@ func TestValidConfig_NoCopySection(t *testing.T) {
 	// Verify results of the configuration file load for checkInfo
 	var checkInfo = []map[string]string{
 		{"storage": "b2", "all": "true"},
-		{"storage": "azure", "all": "false"},
+		{"storage": "azure"},
 	}
 
 	if reflect.DeepEqual(checkInfo, configFile.checkInfo) == false {
-		t.Error("pruneInfo should have been equal, expected:", checkInfo, ", received:", configFile.checkInfo)
+		t.Error("checkInfo should have been equal, expected:", checkInfo, ", received:", configFile.checkInfo)
 	}
 }
 
