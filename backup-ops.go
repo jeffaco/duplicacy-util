@@ -334,7 +334,7 @@ func performDuplicacyPrune(logger *log.Logger, testArgs []string) error {
 		}
 
 		// Build remainder of command arguments
-		cmdArgs = append(testArgs, "prune", "-all", "-storage", pruneInfo["storage"])
+		cmdArgs = append(testArgs, "prune", "-storage", pruneInfo["storage"])
 		cmdArgs = append(cmdArgs, strings.Split(pruneInfo["keep"], " ")...)
 
 		// Handle optional parameters that may be specified
