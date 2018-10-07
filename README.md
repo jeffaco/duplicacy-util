@@ -366,7 +366,20 @@ Fields in the `prune` section are:
 | storage    | Storage name to prune         | Yes      | None          |
 | keep       | [Retention specification][]   | Yes      | None          |
 | threads    | Number of threads to use (requires duplicacy CLI v2.1.1 or later) | No | 1 |
+| all        | Should the whole storage be pruned| No       | true          |
 | quote      | Specify additional duplicacy parameters (for advanced users only) | No | None |
+
+Note that by default pruning is done storage-wise, i.e., all repositories 
+in given storage will be pruned with the selected retention policy. In case
+you want to prune only current repository, you should use an optional field
+"all" in the `prune` section of your config file:
+
+```
+prune:
+    -   storage: b2
+        keep: "0:365 30:180 7:30 1:7"
+        all: false
+```
 
 Finally, fields in the `check` section are:
 
@@ -380,11 +393,11 @@ Note that all sections support a "quote" option. This is for advanced
 usages only, and you should only use this in conjunction with `-v -d`
 (verbose debug). This allows you to specify additional parameters to
 pass to duplicacy commands. For example, if you needed the `duplicacy
-check` command to specify the `-fossels -resurrect` options, you could
+check` command to specify the `-fossils -resurrect` options, you could
 do so by including something like:
 
 ```
-quote: "-fossels -resurrect"
+quote: "-fossils -resurrect"
 ```
 
 in the backup configuration file for section `check`.
