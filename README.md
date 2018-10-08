@@ -366,7 +366,20 @@ Fields in the `prune` section are:
 | storage    | Storage name to prune         | Yes      | None          |
 | keep       | [Retention specification][]   | Yes      | None          |
 | threads    | Number of threads to use (requires duplicacy CLI v2.1.1 or later) | No | 1 |
+| all        | Should all storages be pruned | No       | true          |
 | quote      | Specify additional duplicacy parameters (for advanced users only) | No | None |
+
+Note that by default pruning is done for all snapshot IDs. If you wish to
+only prune particular snapshots, you should specify `all: false` and use the
+`quote` option to specify the snapshot ID to prune, like the following:
+
+```
+prune:
+    -   storage: b2
+        keep: "0:365 30:180 7:30 1:7"
+        all: false
+        quote: "-id mysnapshot"
+```
 
 Finally, fields in the `check` section are:
 
@@ -380,11 +393,11 @@ Note that all sections support a "quote" option. This is for advanced
 usages only, and you should only use this in conjunction with `-v -d`
 (verbose debug). This allows you to specify additional parameters to
 pass to duplicacy commands. For example, if you needed the `duplicacy
-check` command to specify the `-fossels -resurrect` options, you could
+check` command to specify the `-fossils -resurrect` options, you could
 do so by including something like:
 
 ```
-quote: "-fossels -resurrect"
+quote: "-fossils -resurrect"
 ```
 
 in the backup configuration file for section `check`.
