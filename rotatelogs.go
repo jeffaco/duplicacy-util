@@ -85,7 +85,7 @@ func compressLogFile(logFileRoot string) error {
 	defer writer.Close()
 
 	archiver := gzip.NewWriter(writer)
-	archiver.Name = logFileRoot + ".1.gz"
+	archiver.Name = logFileRoot
 	defer archiver.Close()
 
 	if _, err := io.Copy(archiver, reader); err != nil {
