@@ -225,8 +225,8 @@ func processArguments() (int, error) {
 	}
 
 	// Everything is loaded; make sure we hae something to do
-	if !cmdBackup && !cmdPrune && !cmdCheck {
-		return 1, errors.New("No operations to perform (specify -b, -p, -c, or -a)")
+	if !cmdBackup && !cmdCopy && !cmdPrune && !cmdCheck {
+		return 1, errors.New("No operations to perform (specify -backup, -copy, -prune, -check, or -a (all))")
 	}
 
 	// Perform processing. Note that int is returned for two reasons:
