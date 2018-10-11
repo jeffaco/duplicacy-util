@@ -620,7 +620,7 @@ automatically on any schedule you wish.
 ### Scheduling duplicacy-util to Run Automatically
 
 Scheduling `duplicacy-util` to run backups automatically (emailing the
-results automatically) finishes the job. Now backups run attended,
+results automatically) finishes the job. Now backups run unattended,
 automatically, relieving you of the job of doing backups yourself.
 
 Backup scheduling differs by operating system. I provide hints here,
