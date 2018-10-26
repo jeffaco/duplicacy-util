@@ -165,18 +165,26 @@ func main() {
 		os.Exit(2)
 	}
 
+	// Perform our backup operations
 	returnStatus, err := processArguments()
 	if err != nil {
+		// Note that after this "if" test, err is no longer important;
+		// we'll reuse that for email status to set failure exit code
+		// (even if everything else was successful)
 		switch returnStatus {
 		case 6200:
 			// Notify that the backup process has been skipped
 			logError(nil, fmt.Sprintf("Warning: %s", err))
-			notifyOfSkip()
+			err = notifyOfSkip()
 
 		default:
 			// Notify that the backup process has failed
 			logError(nil, fmt.Sprintf("Error: %s", err))
-			notifyOfFailure()
+			err = notifyOfFailure()
+		}
+
+		if returnStatus == 0 && err != nil {
+			returnStatus = 5
 		}
 	}
 
@@ -210,7 +218,11 @@ func processArguments() (int, error) {
 	// Handle request to test Notifications
 	// if testmailFlag is set; only email notifications will be tested
 	if testNotificationsFlag || testMailFlag {
-		return 1, testNotifications()
+		if err := testNotifications(); err != nil {
+			return 1, err
+		}
+
+		return 0, nil
 	}
 
 	if cmdConfig == "" {
@@ -249,7 +261,7 @@ func obtainLock() (int, error) {
 
 	if !locked {
 		// do not have exclusive lock
-		return 6200, errors.New("Backup already running and will be skipped")
+		return 6200, errors.New("backup already running and will be skipped")
 	}
 
 	// flock doesn't remove the lock file when done, so let's do it ourselves
@@ -259,7 +271,7 @@ func obtainLock() (int, error) {
 
 	// Perform operations (backup or whatever)
 	if err := performBackup(); err != nil {
-		return 500, errors.New("Backup failed. Check the logs for details")
+		return 500, errors.New("backup failed, check the logs for details")
 	}
 
 	return 0, nil

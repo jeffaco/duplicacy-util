@@ -4,34 +4,52 @@ import (
 	"errors"
 )
 
-func notifyOfStart() {
+func notifyOfStart() error {
+	var savedError error
 	for _, notifier := range onStartNotifiers {
-		_ = notifier.NotifyOfStart()
+		if err := notifier.NotifyOfStart(); err != nil {
+			savedError = err
+		}
 	}
+
+	return savedError
 }
 
-func notifyOfSkip() {
+func notifyOfSkip() error {
+	var savedError error
 	for _, notifier := range onSkipNotifiers {
-		_ = notifier.NotifyOfSkip()
+		if err := notifier.NotifyOfSkip(); err != nil {
+			savedError = err
+		}
 	}
+
+	return savedError
 }
 
-func notifyOfSuccess() {
+func notifyOfSuccess() error {
+	var savedError error
 	for _, notifier := range onSuccessNotifiers {
-		_ = notifier.NotifyOfSuccess()
+		if err := notifier.NotifyOfSuccess(); err != nil {
+			savedError = err
+		}
 	}
+
+	return savedError
 }
 
-// notifyOfFailure takes a subject argument:
-//   If zero length, subject will be chosen by default
-//   If specified, will override the default subject
-func notifyOfFailure() {
+func notifyOfFailure() error {
+	var savedError error
 	for _, notifier := range onFailureNotifiers {
-		_ = notifier.NotifyOfFailure()
+		if err := notifier.NotifyOfFailure(); err != nil {
+			savedError = err
+		}
 	}
+
+	return savedError
 }
 
 func testNotifications() error {
+	var savedError error
 	cmdConfig = "test"
 
 	backupTable = []backupRevision{
@@ -79,10 +97,21 @@ func testNotifications() error {
 		return errors.New("Warning: No notifiers are configured")
 	}
 
-	notifyOfStart()
-	notifyOfSkip()
-	notifyOfSuccess()
-	notifyOfFailure()
+	if err := notifyOfStart(); err != nil {
+		savedError = err
+	}
 
-	return nil
+	if err := notifyOfSkip(); err != nil {
+		savedError = err
+	}
+
+	if err := notifyOfSuccess(); err != nil {
+		savedError = err
+	}
+
+	if err := notifyOfFailure(); err != nil {
+		savedError = err
+	}
+
+	return savedError
 }

@@ -105,9 +105,9 @@ func performBackup() error {
 	logMessage(logger, fmt.Sprint("Operations completed in ", getTimeDiffString(startTime, endTime)))
 
 	// Notify all configure channels that the backup process has completd
-	notifyOfSuccess()
+	err = notifyOfSuccess()
 
-	return nil
+	return err
 }
 
 func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
