@@ -74,7 +74,7 @@ func daysIn(year int, month time.Month) int {
 // Source: https://stackoverflow.com/questions/36530251/golang-time-since-with-months-and-years
 func getTimeDiffNumbers(from, to time.Time) (years, months, days, hours, minutes, seconds int) {
 	if from.Location() != to.Location() {
-		to = to.In(to.Location())
+		to = to.In(from.Location())
 	}
 
 	if from.After(to) {

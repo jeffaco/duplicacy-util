@@ -64,7 +64,7 @@ func performBackup() error {
 	}
 	logger := log.New(file, "", log.Ltime)
 
-	startTime := time.Now()
+	startTime := time.Now().UTC()
 
 	logMessage(logger, fmt.Sprint("Beginning backup on ", time.Now().Format("01-02-2006 15:04:05")))
 
@@ -99,10 +99,8 @@ func performBackup() error {
 		}
 	}
 
-	endTime := time.Now()
-
 	logger.Println("######################################################################")
-	logMessage(logger, fmt.Sprint("Operations completed in ", getTimeDiffString(startTime, endTime)))
+	logMessage(logger, fmt.Sprint("Operations completed in ", getTimeDiffString(startTime, time.Now().UTC())))
 
 	// Notify all configure channels that the backup process has completd
 	err = notifyOfSuccess()
@@ -161,7 +159,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 
 	// Perform backup operation
 	for i, backupInfo := range configFile.backupInfo {
-		backupStartTime := time.Now()
+		backupStartTime := time.Now().UTC()
 		logger.Println("######################################################################")
 
 		// Minor support for unit tests - distasteful but only reasonable option
@@ -217,7 +215,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 			logError(logger, fmt.Sprint("Error executing command: ", err))
 			return err
 		}
-		backupDuration := getTimeDiffString(backupStartTime, time.Now())
+		backupDuration := getTimeDiffString(backupStartTime, time.Now().UTC())
 
 		// For test, could do a regexp on results, but easier to force known duration here
 		if cmdArgs[0] == "testbackup" {
@@ -260,7 +258,7 @@ func performDuplicacyCopy(logger *log.Logger, testArgs []string) error {
 	}
 
 	for i, copyInfo := range configFile.copyInfo {
-		copyStartTime := time.Now()
+		copyStartTime := time.Now().UTC()
 		logger.Println("######################################################################")
 
 		// Minor support for unit tests - distasteful but only reasonable option
@@ -300,7 +298,7 @@ func performDuplicacyCopy(logger *log.Logger, testArgs []string) error {
 			logError(logger, fmt.Sprint("Error executing command: ", err))
 			return err
 		}
-		copyDuration := getTimeDiffString(copyStartTime, time.Now())
+		copyDuration := getTimeDiffString(copyStartTime, time.Now().UTC())
 
 		// For test, could do a regexp on results, but easier to force known duration here
 		if cmdArgs[0] == "testbackup" {

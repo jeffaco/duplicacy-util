@@ -162,7 +162,7 @@ func TestTimeDiffStringWithTimes(t *testing.T) {
 }
 
 func TestTimeDiffStringWithDurationZeroSeconds(t *testing.T) {
-	startTime := time.Now()
+	startTime := time.Now().UTC()
 
 	result := getTimeDiffString(startTime, startTime)
 	expected := "0 seconds"
@@ -172,7 +172,7 @@ func TestTimeDiffStringWithDurationZeroSeconds(t *testing.T) {
 }
 
 func TestTimeDiffStringWithDurationOneSecond(t *testing.T) {
-	startTime := time.Now()
+	startTime := time.Now().UTC()
 
 	diffTime := startTime.Add(1 * time.Second)
 
@@ -183,7 +183,7 @@ func TestTimeDiffStringWithDurationOneSecond(t *testing.T) {
 	}
 }
 func TestTimeDiffStringWithDurationSeconds(t *testing.T) {
-	startTime := time.Now()
+	startTime := time.Now().UTC()
 
 	diffTime := startTime.Add(15 * time.Second)
 
@@ -195,7 +195,7 @@ func TestTimeDiffStringWithDurationSeconds(t *testing.T) {
 }
 
 func TestTimeDiffStringWithDurationMinutes(t *testing.T) {
-	startTime := time.Now()
+	startTime := time.Now().UTC()
 
 	diffTime := startTime.Add(5 * time.Second)
 	diffTime = diffTime.Add(2 * time.Minute)
@@ -208,7 +208,7 @@ func TestTimeDiffStringWithDurationMinutes(t *testing.T) {
 }
 
 func TestTimeDiffStringWithDurationHours(t *testing.T) {
-	startTime := time.Now()
+	startTime := time.Now().UTC()
 
 	diffTime := startTime.Add(5 * time.Second)
 	diffTime = diffTime.Add(2 * time.Minute)
@@ -222,7 +222,7 @@ func TestTimeDiffStringWithDurationHours(t *testing.T) {
 }
 
 func TestTimeDiffStringWithDurationOneDay(t *testing.T) {
-	startTime := time.Now()
+	startTime := time.Now().UTC()
 
 	diffTime := startTime.Add(5 * time.Second)
 	diffTime = diffTime.Add(2 * time.Minute)
@@ -237,7 +237,7 @@ func TestTimeDiffStringWithDurationOneDay(t *testing.T) {
 }
 
 func TestTimeDiffStringWithDurationDays(t *testing.T) {
-	startTime := time.Now()
+	startTime := time.Now().UTC()
 
 	diffTime := startTime.Add(5 * time.Second)
 	diffTime = diffTime.Add(2 * time.Minute)
