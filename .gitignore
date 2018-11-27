@@ -11,6 +11,7 @@ duplicacy-util.exe
 .idea/**/tasks.xml
 .idea/**/dictionaries
 .idea/**/shelf
+.idea/encodings.xml
 .idea/inspectionProfiles/**
 
 # Sensitive or high-churn files
