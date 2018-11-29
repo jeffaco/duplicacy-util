@@ -1,7 +1,8 @@
 # duplicacy-util: Schedule and run duplicacy via CLI
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/jeffaco/duplicacy-util)](https://goreportcard.com/report/github.com/jeffaco/duplicacy-util)
 [![Build Status](https://travis-ci.org/jeffaco/duplicacy-util.svg?branch=master)](https://travis-ci.org/jeffaco/duplicacy-util)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jeffaco/duplicacy-util)](https://goreportcard.com/report/github.com/jeffaco/duplicacy-util)
+[![codecov](https://codecov.io/gh/jeffaco/duplicacy-util/branch/master/graph/badge.svg)](https://codecov.io/gh/jeffaco/duplicacy-util)
 
 [duplicacy]: https://github.com/gilbertchen/duplicacy
 [viper]: https://github.com/spf13/viper

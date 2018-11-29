@@ -1,7 +1,6 @@
 language: go
 
 go:
-  - 1.10.x
   - 1.11.x
 
 before_install:
@@ -18,3 +17,11 @@ before_install:
 
 script:
   - make test
+
+  # run tests on a standard platform
+  - go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+  - go test -v ./... -race
+
+after_success:
+  # Upload coverage results to codecov.io
+  - bash <(curl -s https://codecov.io/bash)
