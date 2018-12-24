@@ -33,6 +33,18 @@ func TestConfigForParsingErrors(t *testing.T) {
 	}
 }
 
+func TestEmptyConfigFile(t *testing.T) {
+	runningUnitTests = true
+	defer func() {
+		runningUnitTests = false
+	}()
+
+	err := loadGlobalConfig(os.TempDir(), "")
+	if err != nil {
+		t.Error("Empty configuration file should be valid")
+	}
+}
+
 func TestInvalidDuplicacyPath(t *testing.T) {
 	quietFlag = true
 	defer func() {
@@ -148,11 +160,11 @@ func TestForNoDuplicateNotifiers(t *testing.T) {
 func TestSendMailFlagWithInvalidEmailConfig(t *testing.T) {
 	quietFlag = true
 	runningUnitTests = true
-	sendMail = true
+	testNotificationsFlag = true
 	defer func() {
 		quietFlag = false
 		runningUnitTests = false
-		sendMail = false
+		testNotificationsFlag = false
 	}()
 
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/emptyConfig.yml")
@@ -161,29 +173,13 @@ func TestSendMailFlagWithInvalidEmailConfig(t *testing.T) {
 	}
 }
 
-func TestSendMailFlagWithNoConfig(t *testing.T) {
-	runningUnitTests = true
-	sendMail = true
-	defer func() {
-		runningUnitTests = false
-		sendMail = false
-	}()
-
-	err := loadGlobalConfig(".", "")
-	if err == nil {
-		t.Error("Invalid E-main configuration error should have been returned")
-	}
-}
-
 func TestSendMailFlagWithValidEmailConfig(t *testing.T) {
 	quietFlag = true
 	runningUnitTests = true
-	sendMail = true
 	os.Unsetenv("DU_EMAIL_AUTH_PASSWORD")
 	defer func() {
 		quietFlag = false
 		runningUnitTests = false
-		sendMail = false
 	}()
 
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/fullValidConfig.yml")
@@ -202,32 +198,12 @@ func TestSendMailFlagWithValidEmailConfig(t *testing.T) {
 	}
 }
 
-func TestValidDeprecatedEmailConfig(t *testing.T) {
-	quietFlag = true
-	runningUnitTests = true
-	defer func() {
-		quietFlag = false
-		runningUnitTests = false
-	}()
-
-	err := loadGlobalConfig(".", "test/assets/globalConfigs/deprecatedConfig.yml")
-	if err != nil {
-		t.Error(err)
-	}
-	_, err = NewEmailNotifier()
-	if err != nil {
-		t.Error(err)
-	}
-}
-
 func TestAcceptInsecureCertificate(t *testing.T) {
 	quietFlag = true
 	runningUnitTests = true
-	sendMail = true
 	defer func() {
 		quietFlag = false
 		runningUnitTests = false
-		sendMail = false
 	}()
 
 	err := loadGlobalConfig(".", "test/assets/globalConfigs/fullValidConfigInsecureCerts.yml")
@@ -244,12 +220,10 @@ func TestAcceptInsecureCertificate(t *testing.T) {
 func TestSendMailWithEnvioronmentPassword(t *testing.T) {
 	quietFlag = true
 	runningUnitTests = true
-	sendMail = true
 	os.Setenv("DU_EMAIL_AUTH_PASSWORD", "xyzzy")
 	defer func() {
 		quietFlag = false
 		runningUnitTests = false
-		sendMail = false
 		os.Unsetenv("DU_EMAIL_AUTH_PASSWORD")
 	}()
 

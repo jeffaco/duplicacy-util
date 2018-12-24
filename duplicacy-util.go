@@ -34,15 +34,12 @@ var (
 	cmdStorageDir   string // Base directory for storage of global/repository/log files
 
 	// Binary options for what operations to perform
-	cmdAll       bool
-	cmdBackup    bool
-	cmdBackupDep bool
-	cmdCopy      bool
-	cmdCheck     bool
-	cmdPrune     bool
+	cmdAll    bool
+	cmdBackup bool
+	cmdCopy   bool
+	cmdCheck  bool
+	cmdPrune  bool
 
-	sendMail              bool
-	testMailFlag          bool
 	testNotificationsFlag bool
 
 	debugFlag   bool
@@ -84,12 +81,6 @@ func init() {
 	flag.BoolVar(&cmdCheck, "check", false, "Perform duplicacy check operation")
 	flag.BoolVar(&cmdPrune, "prune", false, "Perform duplicacy prune operation")
 
-	flag.BoolVar(&cmdBackupDep, "b", false, "Perform duplicacy backup operation (deprecated; use -backup -copy)")
-	flag.BoolVar(&cmdCheck, "c", false, "Perform duplicacy check operation (deprecated; use -check)")
-	flag.BoolVar(&cmdPrune, "p", false, "Perform duplicacy prune operation (deprecated; use -prune)")
-
-	flag.BoolVar(&sendMail, "m", false, "(Deprecated) Send E-Mail with results of operations (implies quiet)")
-	flag.BoolVar(&testMailFlag, "tm", false, "(Deprecated: Use -tn instead) Send a test message via E-Mail")
 	flag.BoolVar(&testNotificationsFlag, "tn", false, "Test notifications")
 
 	flag.BoolVar(&debugFlag, "d", false, "Enable debug output (implies verbose)")
@@ -196,10 +187,6 @@ func processArguments() (int, error) {
 	if cmdAll {
 		cmdBackup, cmdCopy, cmdPrune, cmdCheck = true, true, true, true
 	}
-	// Deprecated -b command triggers backup and copy
-	if cmdBackupDep {
-		cmdBackup, cmdCopy = true, true
-	}
 	if debugFlag {
 		verboseFlag = true
 	}
@@ -217,7 +204,7 @@ func processArguments() (int, error) {
 
 	// Handle request to test Notifications
 	// if testmailFlag is set; only email notifications will be tested
-	if testNotificationsFlag || testMailFlag {
+	if testNotificationsFlag {
 		if err := testNotifications(); err != nil {
 			return 1, err
 		}

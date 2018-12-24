@@ -22,13 +22,8 @@ var (
 // NewEmailNotifier creates a new email notifier. Returns error if
 // no valid email configuration is found
 func NewEmailNotifier() (EmailNotifier, error) {
-	usesNewConfigStyle := viper.IsSet("email")
-	// check if old or new config style is being used
-	if usesNewConfigStyle == true {
-		useNewConfigStyle()
-	} else {
-		useOldConfigStyle()
-	}
+	// Only support new email configuration in v1.6+
+	useNewConfigStyle()
 
 	var notifier EmailNotifier
 
@@ -36,10 +31,6 @@ func NewEmailNotifier() (EmailNotifier, error) {
 	// fail during send if authentication is required but not specified.
 	if emailFromAddress == "" || emailToAddress == "" || emailServerHostname == "" || emailServerPort == 0 {
 		return notifier, errors.New("Invalid E-mail configuration; Required fields missing")
-	}
-
-	if usesNewConfigStyle == false {
-		logMessage(nil, "Warning: E-Mail configuration in old format, update global configuration file")
 	}
 
 	return notifier, nil
@@ -96,13 +87,4 @@ func useNewConfigStyle() {
 	}
 
 	emailAcceptAnyCerts = viper.GetBool("email.acceptInsecureCerts")
-}
-
-func useOldConfigStyle() {
-	emailFromAddress = viper.GetString("emailFromAddress")
-	emailToAddress = viper.GetString("emailToAddress")
-	emailServerHostname = viper.GetString("emailServerHostname")
-	emailServerPort = viper.GetInt("emailServerPort")
-	emailAuthUsername = viper.GetString("emailAuthUsername")
-	emailAuthPassword = viper.GetString("emailAuthPassword")
 }
