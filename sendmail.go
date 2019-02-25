@@ -213,7 +213,7 @@ func sendMailMessage(subject string, bodyHTML []string, bodyText []string) error
 	m.SetHeader("From", emailFromAddress)
 	m.SetHeader("To", emailToAddress)
 	m.SetHeader("Subject", subject)
-	m.SetBody("text", strings.Join(bodyText, "\r\n"))
+	m.SetBody("text/plain", strings.Join(bodyText, "\r\n"))
 	if len(bodyHTML) != 0 {
 		m.AddAlternative("text/html", strings.Join(bodyHTML, "\r\n"))
 	}
