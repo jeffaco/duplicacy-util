@@ -26,6 +26,7 @@ build:
 test:
 	go vet
 	go test
+	staticcheck
 	ineffassign .
 	golint -set_exit_status
 	gofmt -e -s -w *.go

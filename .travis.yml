@@ -1,12 +1,14 @@
 language: go
 
 go:
-  - 1.11.x
+  - 1.13.x
 
 before_install:
   # Build tools
   - go get golang.org/x/lint/golint
   - go get github.com/gordonklaus/ineffassign
+
+  - curl -sL https://github.com/dominikh/go-tools/releases/download/2019.2.3/staticcheck_linux_amd64.tar.gz | tar xz -C $GOPATH/bin --strip-components=1 staticcheck/staticcheck
 
   # Project dependencies
   - go get github.com/djherbis/times
@@ -21,6 +23,9 @@ script:
   # run tests on a standard platform
   - go test -v ./... -coverprofile=coverage.txt -covermode=atomic
   - go test -v ./... -race
+
+  # Run static analysis
+  - $GOPATH/bin/staticcheck
 
 after_success:
   # Upload coverage results to codecov.io
