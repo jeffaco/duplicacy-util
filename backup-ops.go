@@ -174,7 +174,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 
 		// Handle optional parameters that may be specified
 		threadCount := "1"
-		if _, ok := backupInfo["threads"]; ok == true {
+		if _, ok := backupInfo["threads"]; ok {
 			if backupInfo["threads"] != "" {
 				threadCount = backupInfo["threads"]
 				cmdArgs = append(cmdArgs, "-threads", threadCount)
@@ -182,12 +182,12 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 		}
 
 		vssFlags := ""
-		if _, ok := backupInfo["vss"]; ok == true {
+		if _, ok := backupInfo["vss"]; ok {
 			if backupInfo["vss"] == "true" {
 				cmdArgs = append(cmdArgs, "-vss")
 
 				vssFlags = " -vss"
-				if _, ok := backupInfo["vssTimeout"]; ok == true {
+				if _, ok := backupInfo["vssTimeout"]; ok {
 					if backupInfo["vssTimeout"] != "" {
 						cmdArgs = append(cmdArgs, "-vss-timeout", backupInfo["vssTimeout"])
 						vssFlags = fmt.Sprintf("%s -vss-timeout %s", vssFlags, backupInfo["vssTimeout"])
@@ -197,7 +197,7 @@ func performDuplicacyBackup(logger *log.Logger, testArgs []string) error {
 		}
 
 		quoteFlags := ""
-		if _, ok := backupInfo["quote"]; ok == true {
+		if _, ok := backupInfo["quote"]; ok {
 			if backupInfo["quote"] != "" {
 				quoteFlags = " " + backupInfo["quote"]
 				cmdArgs = append(cmdArgs, strings.Split(backupInfo["quote"], " ")...)
@@ -273,7 +273,7 @@ func performDuplicacyCopy(logger *log.Logger, testArgs []string) error {
 
 		// Handle optional parameters that may be specified
 		threadCount := "1"
-		if _, ok := copyInfo["threads"]; ok == true {
+		if _, ok := copyInfo["threads"]; ok {
 			if copyInfo["threads"] != "" {
 				threadCount = copyInfo["threads"]
 				cmdArgs = append(cmdArgs, "-threads", threadCount)
@@ -281,7 +281,7 @@ func performDuplicacyCopy(logger *log.Logger, testArgs []string) error {
 		}
 
 		quoteFlags := ""
-		if _, ok := copyInfo["quote"]; ok == true {
+		if _, ok := copyInfo["quote"]; ok {
 			if copyInfo["quote"] != "" {
 				quoteFlags = " " + copyInfo["quote"]
 				cmdArgs = append(cmdArgs, strings.Split(copyInfo["quote"], " ")...)
@@ -337,7 +337,7 @@ func performDuplicacyPrune(logger *log.Logger, testArgs []string) error {
 
 		// Handle optional parameters that may be specified
 		threadCount := "1"
-		if _, ok := pruneInfo["threads"]; ok == true {
+		if _, ok := pruneInfo["threads"]; ok {
 			if pruneInfo["threads"] != "" {
 				threadCount = pruneInfo["threads"]
 				cmdArgs = append(cmdArgs, "-threads", threadCount)
@@ -345,7 +345,7 @@ func performDuplicacyPrune(logger *log.Logger, testArgs []string) error {
 		}
 
 		allFlag := ""
-		if _, ok := pruneInfo["all"]; ok == true {
+		if _, ok := pruneInfo["all"]; ok {
 			if pruneInfo["all"] != "false" {
 				allFlag = " -all"
 				cmdArgs = append(cmdArgs, "-all")
@@ -356,7 +356,7 @@ func performDuplicacyPrune(logger *log.Logger, testArgs []string) error {
 		}
 
 		quoteFlags := ""
-		if _, ok := pruneInfo["quote"]; ok == true {
+		if _, ok := pruneInfo["quote"]; ok {
 			if pruneInfo["quote"] != "" {
 				quoteFlags = " " + pruneInfo["quote"]
 				cmdArgs = append(cmdArgs, strings.Split(pruneInfo["quote"], " ")...)
@@ -399,7 +399,7 @@ func performDuplicacyCheck(logger *log.Logger, testArgs []string) error {
 
 		// Handle optional parameters that may be specified
 		allText := ""
-		if _, ok := checkInfo["all"]; ok == true {
+		if _, ok := checkInfo["all"]; ok {
 			if checkInfo["all"] == "true" {
 				allText = " with -all"
 				cmdArgs = append(cmdArgs, "-all")
@@ -407,7 +407,7 @@ func performDuplicacyCheck(logger *log.Logger, testArgs []string) error {
 		}
 
 		quoteFlags := ""
-		if _, ok := checkInfo["quote"]; ok == true {
+		if _, ok := checkInfo["quote"]; ok {
 			if checkInfo["quote"] != "" {
 				quoteFlags = " " + checkInfo["quote"]
 				cmdArgs = append(cmdArgs, strings.Split(checkInfo["quote"], " ")...)

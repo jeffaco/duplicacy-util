@@ -24,7 +24,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/theckman/go-flock"
+	"github.com/gofrs/flock"
 )
 
 var (
@@ -96,13 +96,13 @@ func logFMessage(w io.Writer, logger *log.Logger, message string) {
 	}
 
 	text := fmt.Sprint(time.Now().Format("15:04:05"), " ", message)
-	if loggingSystemDisplayTime == false {
+	if !loggingSystemDisplayTime {
 		text = message
 	}
 	mailBody = append(mailBody, text)
 
 	if !quietFlag {
-		if w == os.Stdout && loggingSystemDisplayTime == true {
+		if w == os.Stdout && loggingSystemDisplayTime {
 			fmt.Fprintln(w, text)
 		} else {
 			// Fatal message shouldn't have time prefix
@@ -192,12 +192,12 @@ func processArguments() (int, error) {
 	}
 
 	// Verbose overrides quiet
-	if verboseFlag == true && quietFlag == true {
+	if verboseFlag && quietFlag {
 		quietFlag = false
 	}
 
 	// if no failure notifier is defined quiet mode is not allowed
-	if quietFlag && hasFailureNotifier() == false {
+	if quietFlag && !hasFailureNotifier() {
 		quietFlag = false
 		logError(nil, "Notice: Quiet mode refused; a failure notifier should be configured")
 	}
@@ -239,7 +239,7 @@ func processArguments() (int, error) {
 func obtainLock() (int, error) {
 	// Obtain a lock to make sure we don't overlap operations against a configuration
 	lockfile := filepath.Join(globalLockDir, cmdConfig+".lock")
-	fileLock := flock.NewFlock(lockfile)
+	fileLock := flock.New(lockfile)
 
 	locked, err := fileLock.TryLock()
 	if err != nil {

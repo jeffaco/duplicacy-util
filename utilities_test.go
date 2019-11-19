@@ -29,8 +29,6 @@ func TestGetStorageDirectoryDoesNotExist(t *testing.T) {
 	if err == nil {
 		t.Errorf("successful call to getStorageDirectory with non-existent directory")
 	}
-
-	return
 }
 
 func TestGetStorageDirectoryWithHomeDirectory(t *testing.T) {
@@ -39,8 +37,6 @@ func TestGetStorageDirectoryWithHomeDirectory(t *testing.T) {
 	if err != nil {
 		t.Errorf("error result from getStorageDirectory with home directory: %s", err)
 	}
-
-	return
 }
 
 func TestGetStorageDirectoryWithDefaults(t *testing.T) {

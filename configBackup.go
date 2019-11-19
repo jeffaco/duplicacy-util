@@ -154,7 +154,7 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 			logMessage(nil, fmt.Sprintf("  Num\t%-20s%s", "Storage", "Threads"))
 			for i := range config.backupInfo {
 				var localThreads string
-				if _, ok := config.backupInfo[i]["threads"]; ok == true {
+				if _, ok := config.backupInfo[i]["threads"]; ok {
 					localThreads = config.backupInfo[i]["threads"]
 				}
 				logMessage(nil, fmt.Sprintf("  %2d\t%-20s   %-2s", i+1, config.backupInfo[i]["name"], localThreads))
@@ -164,7 +164,7 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 				logMessage(nil, fmt.Sprintf("  Num\t%-20s%-20s%s", "From", "To", "Threads"))
 				for i := range config.copyInfo {
 					var localThreads string
-					if _, ok := config.copyInfo[i]["threads"]; ok == true {
+					if _, ok := config.copyInfo[i]["threads"]; ok {
 						localThreads = config.copyInfo[i]["threads"]
 					}
 					logMessage(nil, fmt.Sprintf("  %2d\t%-20s%-20s   %-2s", i+1, config.copyInfo[i]["from"], config.copyInfo[i]["to"], localThreads))
@@ -182,7 +182,7 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 			logMessage(nil, fmt.Sprintf("  Num\t%-20s%s", "Storage", "All Snapshots"))
 			for i := range config.checkInfo {
 				var checkAll string
-				if _, ok := config.checkInfo[i]["all"]; ok == true {
+				if _, ok := config.checkInfo[i]["all"]; ok {
 					checkAll = "true"
 				}
 				logMessage(nil, fmt.Sprintf("  %2d\t%-20s    %-2s", i+1, config.checkInfo[i]["storage"], checkAll))
@@ -207,7 +207,7 @@ func readSection(viper *viper.Viper, filename string, sectionKey string) []map[s
 		section := make([]interface{}, 0)
 		if viper.IsSet(sectionKey + ".1") {
 			// Have we issued our global warning before; if not, do so
-			if oldBackupFileFormat == false {
+			if !oldBackupFileFormat {
 				oldBackupFileFormat = true
 				logError(nil, "WARNING: Upgrade format of backup configuration "+filename+" to new format!")
 			}
@@ -235,15 +235,15 @@ func coerceToArrayOfMapStringString(slice []interface{}) []map[string]string {
 	section := make([]map[string]string, len(slice))
 	for i, item := range slice {
 		itemMap := make(map[string]string)
-		switch item.(type) {
+		switch typeList := item.(type) {
 		case map[string]interface{}:
-			for key, value := range item.(map[string]interface{}) {
+			for key, value := range typeList {
 				strKey := key
 				strValue := fmt.Sprintf("%v", value)
 				itemMap[strKey] = strValue
 			}
 		case map[interface{}]interface{}:
-			for key, value := range item.(map[interface{}]interface{}) {
+			for key, value := range typeList {
 				strKey := fmt.Sprintf("%v", key)
 				strValue := fmt.Sprintf("%v", value)
 				itemMap[strKey] = strValue

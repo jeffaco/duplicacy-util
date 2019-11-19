@@ -218,7 +218,6 @@ func TestBackupOpsHelperProcess(t *testing.T) {
 	switch args[0] {
 	case "testbackup":
 		backupFile := args[1]
-		args = args[2:]
 		backupFile = path.Join("test/assets", backupFile)
 		fmt.Fprintf(os.Stdout, "Processing backup file: %q\n", backupFile)
 		if err := readFileToStdout(backupFile); err != nil {
