@@ -94,7 +94,7 @@ to get dependencies:
 go get github.com/djherbis/times
 go get github.com/mitchellh/go-homedir
 go get github.com/spf13/viper
-go get github.com/theckman/go-flock
+go get github.com/gofrs/flock
 go get gopkg.in/gomail.v2
 ```
 
