@@ -18,14 +18,12 @@ before_install:
   - go get gopkg.in/gomail.v2
 
 script:
+  - make build
   - make test
 
   # run tests on a standard platform
   - go test -v ./... -coverprofile=coverage.txt -covermode=atomic
   - go test -v ./... -race
-
-  # Run static analysis
-  - $GOPATH/bin/staticcheck
 
 after_success:
   # Upload coverage results to codecov.io
