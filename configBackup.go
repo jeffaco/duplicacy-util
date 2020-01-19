@@ -114,7 +114,7 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 
 	for i, pi := range config.pruneInfo {
 		if pi["storage"] == "" {
-			err = fmt.Errorf("missing mandatory prune field: %d.from", i)
+			err = fmt.Errorf("missing mandatory prune field: %d.storage", i)
 			logError(nil, fmt.Sprint("Error: ", err))
 		}
 		if pi["keep"] == "" {
