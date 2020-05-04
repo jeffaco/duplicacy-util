@@ -1,0 +1,10 @@
+To download golangci-lint:
+
+Office-iMac:duplicacy-util jeff$ # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.26.0
+
+
+
+To run golang-ci-lint:
+
+Office-iMac:duplicacy-util jeff$ # golangci-lint run --disable errcheck
+
