@@ -322,6 +322,11 @@ and sections that define operations. The repository-wide settings are:
 | ---------- | ------------------------------------- | ------------- |
 | repository | Location of the repository to back up | None          |
 
+If you are storing the config directory (`.duplicacy`) of the repository not
+in the root of the repository itself (using the `-pref-dir` and -repository`
+options when creating the repository with duplicacy) then you need to supply
+the location of the config directory here.
+
 Sections in the repository configuration files consist of:
 
 | Section Name | Purpose                                                                                                                |
