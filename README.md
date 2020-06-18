@@ -322,6 +322,15 @@ and sections that define operations. The repository-wide settings are:
 | ---------- | ------------------------------------- | ------------- |
 | repository | Location of the repository to back up | None          |
 
+The `reposository` field normally points to the root of repository to back up,
+and is the location that duplicacy itself stores its configuration directory
+(`.duploicacy`).
+
+You may change the location of dupliacy's repository configuration directory,
+`.duplicacy` (using the `-pref-dir` and `-repository` options when creating
+the repository with duplicacy). If you do so, then the `repository` field
+above should refer to the location of duplicacy's `.duplicacy` directory.
+
 Sections in the repository configuration files consist of:
 
 | Section Name | Purpose                                                                                                                |
