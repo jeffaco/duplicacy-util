@@ -10,6 +10,10 @@ func TestValidConfigWithNumberedKeys(t *testing.T) {
 	defer func() {
 		quietFlag = false
 	}()
+	cmdBackup = true
+	cmdCopy = true
+	cmdPrune = true
+	cmdCheck = true
 
 	// Read the expected configuration file under test
 	configFile = newConfigurationFile()
