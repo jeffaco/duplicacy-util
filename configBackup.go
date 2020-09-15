@@ -78,71 +78,73 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 	}
 
 	// Populate information from configuration
-	config.backupInfo = readSection(v, config.configFilename, "storage")
-	config.copyInfo = readSection(v, config.configFilename, "copy")
-	config.pruneInfo = readSection(v, config.configFilename, "prune")
-	config.checkInfo = readSection(v, config.configFilename, "check")
-
-	// Validate, set defaults
-	if len(config.backupInfo) == 0 {
-		err = errors.New("no storage locations defined in configuration")
-		logError(nil, fmt.Sprint("Error: ", err))
-	} else {
-		for i, bi := range config.backupInfo {
-			if bi["name"] == "" {
-				err = fmt.Errorf("missing mandatory storage field: %d.name", i)
-				logError(nil, fmt.Sprint("Error: ", err))
-			}
-		}
-	}
-
-	for i, ci := range config.copyInfo {
-		if ci["from"] == "" {
-			err = fmt.Errorf("missing mandatory from field: %d.from", i)
-			logError(nil, fmt.Sprint("Error: ", err))
-		}
-		if ci["to"] == "" {
-			err = fmt.Errorf("missing mandatory to field: %d.to", i)
-			logError(nil, fmt.Sprint("Error: ", err))
-		}
-	}
-
-	if len(config.pruneInfo) == 0 {
-		err = errors.New("no prune locations defined in configuration")
-		logError(nil, fmt.Sprint("Error: ", err))
-	}
-
-	for i, pi := range config.pruneInfo {
-		if pi["storage"] == "" {
-			err = fmt.Errorf("missing mandatory prune field: %d.storage", i)
-			logError(nil, fmt.Sprint("Error: ", err))
-		}
-		if pi["keep"] == "" {
-			err = fmt.Errorf("missing mandatory prune field: %d.keep", i)
+	if cmdBackup {
+		config.backupInfo = readSection(v, config.configFilename, "storage")
+		if len(config.backupInfo) == 0 {
+			err = errors.New("no storage locations defined in configuration")
 			logError(nil, fmt.Sprint("Error: ", err))
 		} else {
-			// Split/join to get "-keep " before each element
-			splitList := strings.Split(pi["keep"], " ")
-			for i, element := range splitList {
-				splitList[i] = "-keep " + element
+			for i, bi := range config.backupInfo {
+				if bi["name"] == "" {
+					err = fmt.Errorf("missing mandatory storage field: %d.name", i)
+					logError(nil, fmt.Sprint("Error: ", err))
+				}
 			}
-
-			pi["keep"] = strings.Join(splitList, " ")
 		}
 	}
-
-	if len(config.checkInfo) == 0 {
-		err = errors.New("no check locations defined in configuration")
-		logError(nil, fmt.Sprint("Error: ", err))
-	} else {
-		for i, ci := range config.checkInfo {
-			if ci["storage"] == "" {
-				err = fmt.Errorf("missing mandatory check field: %d.storage", i)
+	if cmdCopy {
+		config.copyInfo = readSection(v, config.configFilename, "copy")
+		for i, ci := range config.copyInfo {
+			if ci["from"] == "" {
+				err = fmt.Errorf("missing mandatory from field: %d.from", i)
+				logError(nil, fmt.Sprint("Error: ", err))
+			}
+			if ci["to"] == "" {
+				err = fmt.Errorf("missing mandatory to field: %d.to", i)
 				logError(nil, fmt.Sprint("Error: ", err))
 			}
 		}
 	}
+	if cmdPrune {
+		config.pruneInfo = readSection(v, config.configFilename, "prune")
+		if len(config.pruneInfo) == 0 {
+			err = errors.New("no prune locations defined in configuration")
+			logError(nil, fmt.Sprint("Error: ", err))
+		}
 
+		for i, pi := range config.pruneInfo {
+			if pi["storage"] == "" {
+				err = fmt.Errorf("missing mandatory prune field: %d.storage", i)
+				logError(nil, fmt.Sprint("Error: ", err))
+			}
+			if pi["keep"] == "" {
+				err = fmt.Errorf("missing mandatory prune field: %d.keep", i)
+				logError(nil, fmt.Sprint("Error: ", err))
+			} else {
+				// Split/join to get "-keep " before each element
+				splitList := strings.Split(pi["keep"], " ")
+				for i, element := range splitList {
+					splitList[i] = "-keep " + element
+				}
+
+				pi["keep"] = strings.Join(splitList, " ")
+			}
+		}
+	}
+	if cmdCheck {
+		config.checkInfo = readSection(v, config.configFilename, "check")
+		if len(config.checkInfo) == 0 {
+			err = errors.New("no check locations defined in configuration")
+			logError(nil, fmt.Sprint("Error: ", err))
+		} else {
+			for i, ci := range config.checkInfo {
+				if ci["storage"] == "" {
+					err = fmt.Errorf("missing mandatory check field: %d.storage", i)
+					logError(nil, fmt.Sprint("Error: ", err))
+				}
+			}
+		}
+	}
 	// Generate verbose/debug output if requested (assuming no fatal errors)
 
 	if err == nil {
