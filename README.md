@@ -322,11 +322,11 @@ and sections that define operations. The repository-wide settings are:
 | ---------- | ------------------------------------- | ------------- |
 | repository | Location of the repository to back up | None          |
 
-The `reposository` field normally points to the root of repository to back up,
+The `repository` field normally points to the root of repository to back up,
 and is the location that duplicacy itself stores its configuration directory
-(`.duploicacy`).
+(`.duplicacy`).
 
-You may change the location of dupliacy's repository configuration directory,
+You may change the location of duplicacy's repository configuration directory,
 `.duplicacy` (using the `-pref-dir` and `-repository` options when creating
 the repository with duplicacy). If you do so, then the `repository` field
 above should refer to the location of duplicacy's `.duplicacy` directory.
@@ -538,9 +538,9 @@ and various commands that [Duplicacy][] supports.
 
 **NOTE: This discussion is specific to Gmail, but if you are using a
 different mail server, you can almost certainly use these ideas in your
-specific scenerio.**
+specific scenario.**
 
-In order to send E-Mail notifications, you must first have configured a 
+In order to send E-Mail notifications, you must first have configured a
 number of fields in the [Global configuration file](#global-configuration-file).
 These fields depend on what E-Mail server
 you are using. I use Google's
@@ -559,11 +559,11 @@ permissions of this file appropriately, or use environment variable
 configuration file.
 
 Once you set up the E-Mail configuration appropriately, you can test it
-with a command like: `./duplicacy-util -tn`. This will trigger a failure 
+with a command like: `./duplicacy-util -tn`. This will trigger a failure
 notification for all configured notification channels (e.g E-Mail).
 
 It's recommended that you use Gmail filtering so that failed backups
-are visable in your `inbox` while successful backups are set aside for
+are visible in your `inbox` while successful backups are set aside for
 deletion. To do this, first create a folder named `Backup Logs`.
 After the folder is created, then create a filter rule as follows:
 
@@ -634,7 +634,7 @@ results automatically) finishes the job. Now backups run unattended,
 automatically, relieving you of the job of doing backups yourself.
 
 Backup scheduling differs by operating system. I provide hints here,
-although there are lots of diferent ways to schedule jobs automatically.
+although there are lots of different ways to schedule jobs automatically.
 
 #### Scheduling for Linux
 
