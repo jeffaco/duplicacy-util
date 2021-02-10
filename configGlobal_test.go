@@ -3,6 +3,8 @@ package main
 import (
 	"os"
 	"testing"
+
+	"github.com/spf13/viper"
 )
 
 func TestValidConfig(t *testing.T) {
@@ -113,7 +115,7 @@ func TestValidConfigurationChannel(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = configureNotificationChannel([]string{"email"}, "onFailure")
+	_, err = configureNotificationChannel(viper.GetViper(), []string{"email"}, "onFailure")
 	if err != nil {
 		t.Error(err)
 	}
@@ -127,7 +129,7 @@ func TestInvalidConfigurationChannel(t *testing.T) {
 		runningUnitTests = false
 	}()
 
-	_, err := configureNotificationChannel([]string{"emails"}, "onFailure")
+	_, err := configureNotificationChannel(viper.GetViper(), []string{"emails"}, "onFailure")
 	if err == nil {
 		t.Error("Invalid notification channel error should have been returned")
 	}
@@ -147,7 +149,7 @@ func TestForNoDuplicateNotifiers(t *testing.T) {
 	}
 
 	var notifiers []Notifier
-	notifiers, err = configureNotificationChannel([]string{"email", "email"}, "onFailure")
+	notifiers, err = configureNotificationChannel(viper.GetViper(), []string{"email", "email"}, "onFailure")
 	if err != nil {
 		t.Error(err)
 	}

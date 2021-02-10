@@ -1,0 +1,46 @@
+repository: .
+
+storage:
+    - name: b2
+      threads: 10
+    - name: azure-direct
+      threads: 5
+    - name: default-threads
+
+copy:
+    - from: b2
+      to: azure
+      threads: 10
+    - from: b2
+      to: default-threads
+
+prune:
+    - storage: b2
+      keep: "0:365 30:180 7:30 1:7"
+    - storage: azure
+      keep: "0:365 30:180 7:30 1:7"
+
+check:
+    - storage: b2
+      all: true
+    - storage: azure
+
+notifications:
+  onStart: ['http']
+  onSuccess: ['http']
+  onFailure: ['http']
+http:
+  method: POST # Required
+  urls: # Only the events declared above are required for URLs
+    onStart: http://localhost/some_guid_override/start
+    onSkipped:
+    onSuccess: http://localhost/some_guid_override
+    onFailure: http://localhost/some_guid_override/fail
+  username: basicusername
+  password: basicpassword
+  body: |+ # Shown below is the default. Supports template. No payload validation is done.
+    {
+      "event": "{{.Event}}",
+      "configName": "{{.ConfigName}}"
+    }
+  acceptInsecureCerts: true

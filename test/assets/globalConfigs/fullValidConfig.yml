@@ -1,8 +1,8 @@
 notifications:
-  onStart: []
+  onStart: ['http']
   onSkipped: ['email']
-  onSuccess: ['email']
-  onFailure: ['email']
+  onSuccess: ['email','http']
+  onFailure: ['email','http']
 
 email:
   fromAddress: "Donald Duck <donald.xyzzy@gmail.com>"
@@ -11,3 +11,19 @@ email:
   serverPort: 465
   authUsername: donald.xyzzy@gmail.com
   authPassword: gaozqlwbztypagwt
+
+http:
+  method: POST # Required
+  urls: # Only the events declared above are required for URLs
+    onStart: http://localhost/some_guid/start
+    onSkipped:
+    onSuccess: http://localhost/some_guid
+    onFailure: http://localhost/some_guid/fail
+  username: basicusername
+  password: basicpassword
+  body: |+ # Shown below is the default. Supports template. No payload validation is done.
+    {
+      "event": "{{.Event}}",
+      "configName": "{{.ConfigName}}"
+    }
+  acceptInsecureCerts: true
