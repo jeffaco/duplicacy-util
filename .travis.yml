@@ -1,14 +1,14 @@
 language: go
 
 go:
-  - 1.13.x
+  - 1.15.x
 
 before_install:
   # Build tools
   - go get golang.org/x/lint/golint
   - go get github.com/gordonklaus/ineffassign
 
-  - curl -sL https://github.com/dominikh/go-tools/releases/download/2019.2.3/staticcheck_linux_amd64.tar.gz | tar xz -C $GOPATH/bin --strip-components=1 staticcheck/staticcheck
+  - curl -sL https://github.com/dominikh/go-tools/releases/download/2020.2.1/staticcheck_linux_amd64.tar.gz | tar xz -C $GOPATH/bin --strip-components=1 staticcheck/staticcheck
 
   # Project dependencies
   - go get github.com/djherbis/times
@@ -16,6 +16,7 @@ before_install:
   - go get github.com/spf13/viper
   - go get github.com/gofrs/flock
   - go get gopkg.in/gomail.v2
+  - go get github.com/stretchr/testify
 
 script:
   - make build

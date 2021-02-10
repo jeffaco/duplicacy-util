@@ -42,7 +42,29 @@ var (
 	onSkipNotifiers    []Notifier
 	onSuccessNotifiers []Notifier
 	onFailureNotifiers []Notifier
+	channels           notificationChannels
 )
+
+const (
+	// OnStart is the notification event emitted when the backup job starts.
+	OnStart NotificationType = "onstart"
+	// OnSkipped is the notification event emitted when the job is skipped because.
+	OnSkipped NotificationType = "onskipped"
+	// OnSuccess is emitted after the job completes successfully.
+	OnSuccess NotificationType = "onsuccess"
+	// OnFailure is emitted after the job completes unsuccessfully.
+	OnFailure NotificationType = "onfailure"
+)
+
+type notificationChannels struct {
+	OnStart   []string
+	OnSkip    []string `mapstructure:"onskipped"`
+	OnSuccess []string
+	OnFailure []string
+}
+
+// NotificationType are the different notification events that may be emitted during the lifecycle of running a backup.
+type NotificationType string
 
 // loadGlobalConfig reads in config file and ENV variables if set.
 func loadGlobalConfig(storageDir string, cfgFile string) error {
@@ -103,6 +125,7 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 	onSkipNotifiers = []Notifier{}
 	onSuccessNotifiers = []Notifier{}
 	onFailureNotifiers = []Notifier{}
+	channels = notificationChannels{}
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
@@ -137,36 +160,30 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 	}
 
 	var err error
-	// Configure notifiers for onStart notification
-	if configSlice := viper.GetStringSlice("notifications.onStart"); len(configSlice) > 0 {
-		onStartNotifiers, err = configureNotificationChannel(configSlice, "onStart")
-		if err != nil {
-			return err
-		}
+	if err := viper.UnmarshalKey("notifications", &channels); err != nil {
+		return err
 	}
-
+	// Configure notifiers for onStart notification
+	onStartNotifiers, err = configureNotificationChannel(viper.GetViper(), channels.OnStart, OnStart)
+	if err != nil {
+		return err
+	}
 	// Configure notifiers for onSkip notification
-	if configSlice := viper.GetStringSlice("notifications.onSkip"); len(configSlice) > 0 {
-		onSkipNotifiers, err = configureNotificationChannel(configSlice, "onSkip")
-		if err != nil {
-			return err
-		}
+	onSkipNotifiers, err = configureNotificationChannel(viper.GetViper(), channels.OnSkip, OnSkipped)
+	if err != nil {
+		return err
 	}
 
 	// Configure notifiers for onSuccess notification
-	if configSlice := viper.GetStringSlice("notifications.onSuccess"); len(configSlice) > 0 {
-		onSuccessNotifiers, err = configureNotificationChannel(configSlice, "onSuccess")
-		if err != nil {
-			return err
-		}
+	onSuccessNotifiers, err = configureNotificationChannel(viper.GetViper(), channels.OnSuccess, OnSuccess)
+	if err != nil {
+		return err
 	}
 
 	// Configure notifiers for onFailure notification
-	if configSlice := viper.GetStringSlice("notifications.onFailure"); len(configSlice) > 0 {
-		onFailureNotifiers, err = configureNotificationChannel(configSlice, "onFailure")
-		if err != nil {
-			return err
-		}
+	onFailureNotifiers, err = configureNotificationChannel(viper.GetViper(), channels.OnFailure, OnFailure)
+	if err != nil {
+		return err
 	}
 
 	if testNotificationsFlag && len(onStartNotifiers) == 0 && len(onSkipNotifiers) == 0 && len(onSuccessNotifiers) == 0 && len(onFailureNotifiers) == 0 {
@@ -176,21 +193,30 @@ func setGlobalConfigVariables(storageDir string, cfgFile string) error {
 	return nil
 }
 
-func configureNotificationChannel(channels []string, notificationType string) ([]Notifier, error) {
+func configureNotificationChannel(v *viper.Viper, channels []string, notificationType NotificationType) ([]Notifier, error) {
 	notifiers := []Notifier{}
 	for _, channel := range channels {
-		if channel == "email" {
-			emailNotifier, err := NewEmailNotifier()
-			if err != nil {
-				return nil, err
+		var notifier Notifier
+		var err error
+		switch channel {
+		case "email":
+			notifier, err = NewEmailNotifier(v)
+		case "http":
+			cfg, cfgErr := NewHTTPNotifierConfig(v, notificationType)
+			if cfgErr != nil {
+				return nil, cfgErr
 			}
-			if isUniqueNotifier(emailNotifier, notifiers) {
-				notifiers = append(notifiers, emailNotifier)
-			}
-			continue
+			notifier, err = NewHTTPNotifier(cfg)
+		default:
+			// Return error if invalid notification channel is provided
+			return nil, fmt.Errorf("Invalid notification channel \"%s\" provided for %sNotifier", channel, notificationType)
 		}
-		// Return error if invalid notification channel is provided
-		return nil, fmt.Errorf("Invalid notification channel \"%s\" provided for %sNotifier", channel, notificationType)
+		if err != nil {
+			return nil, err
+		}
+		if isUniqueNotifier(notifier, notifiers) {
+			notifiers = append(notifiers, notifier)
+		}
 	}
 	return notifiers, nil
 }

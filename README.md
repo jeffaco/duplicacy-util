@@ -29,6 +29,7 @@ Table of contents:
   - [Global configuration file](#global-configuration-file)
     - [Notifications](#notifications)
     - [E-Mail Notifications](#email-notifications)
+    - [HTTP Notifications](#http-notifications)
   - [Local configuration file](#local-configuration-file)
 - [Command line usage](#command-line-usage)
 - [Getting started with duplicacy-util](#getting-started-with-duplicacy-util)
@@ -176,7 +177,7 @@ already running), succeed, and fail. Unless you're planning to only be running
 `dupliacy-util` interactively, it's strongly recommended to configure
 notifications.
 
-For now only email notifications are supported, but more notification channels
+For now only email and http notifications are supported, but more notification channels
 will be implemented. The following config snippet shows how to subscribe to
 specific notifications:
 
@@ -184,7 +185,7 @@ specific notifications:
 notifications:
   onStart: []
   onSkip: ['email']
-  onSuccess: ['email']
+  onSuccess: ['email','http']
   onFailure: ['email']
 ```
 
@@ -240,13 +241,56 @@ You can filter on the subject line to direct the E-Mail appropriately
 to a folder of your choice.
 See [Management of E-Mail Messages](#management-of-e-mail-messages), for E-Mail configuration hints.
 
+##### HTTP Notifications
+
+| Field Name          | Purpose                                                      | Default |
+| ------------------- | ------------------------------------------------------------ | ------- |
+| urls                | List of URLs by notification type.                           | None    |
+| method              | Type of request: GET, POST, PUT                              | None    |
+| username            | Username for authentication with HTTP Basic Auth             | None    |
+| password            | Password for authentication with HTTP Basic Auth             | None    |
+| body                | Template supporting payload used for POST and PUT methods.   | {"event": "{{.Event}}",<br /> "configName": "{{.ConfigName}}"}    |
+| acceptInsecureCerts | Accept insecure or self-signed server certificates           | false   |
+
+Notes on Body Field:  
+The Body field supports using Go's template placeholders that are evaluated before notifications are sent.
+The variables `{{.Event}}` and `{{.ConfigName}}` can be placed anywhere in the Body. Event evaluates to one of
+the notification events: `onStart`, `onSkip`, `onSuccess`, `onFailure`. ConfigName evaluates to the name of the current
+configuration that is being used. The Body payload is not validated and will be sent verbatim after evaluation. The 
+default payload uses JSON as an example, but no further verification is done on its contents.
+
+Here is an example on setting up HTTP notifications:
+```yaml
+notifications:
+  onStart: ['http']
+  onSkipped: []
+  onSuccess: ['http']
+  onFailure: ['http']
+
+http:
+  method: POST # Required
+  urls:
+    onStart: http://localhost/some_guid_override/start
+    onSkipped:
+    onSuccess: http://localhost/some_guid_override
+    onFailure: http://localhost/some_guid_override/fail
+  username: basicusername
+  password: basicpassword
+  body: |+ # Below is the default.
+    {
+      "event": "{{.Event}}",
+      "configName": "{{.ConfigName}}"
+    }
+  acceptInsecureCerts: true
+```
+
 #### Local configuration file
 
 The local configuration file (or repository configuration file) defines how to
 back up a specific repository. This file must be specified on the command line
 (discussed later). The repository-specific configuration file may take lists
 of storages if you [back up to multiple cloud providers][].
-In the simple case, a configuration file can short, such as this:
+In the simple case, a configuration file can be short, such as this:
 
 ```
 repository: /Volumes/Quicken
@@ -322,7 +366,7 @@ and sections that define operations. The repository-wide settings are:
 | ---------- | ------------------------------------- | ------------- |
 | repository | Location of the repository to back up | None          |
 
-The `reposository` field normally points to the root of repository to back up,
+The `repository` field normally points to the root of repository to back up,
 and is the location that duplicacy itself stores its configuration directory
 (`.duploicacy`).
 
@@ -339,6 +383,7 @@ Sections in the repository configuration files consist of:
 | copy         | List of storage from-to pairs for [duplicacy copy][] operations      |
 | prune        | List of storage names to prune for [duplicacy prune][] operations\* |
 | check        | List of storage names to check for [duplicacy check][] operations\* |
+| notifications| List of notification channels to additionally run on this backup |
 
 Note that `*` denotes that this section is mandatory and MUST be specified
 in the configuration file.
@@ -411,6 +456,10 @@ quote: "-fossils -resurrect"
 ```
 
 in the backup configuration file for section `check`.
+
+Per backup notifications can additionally be added by specifying a `notification` section with 
+a corresponding channel configuration just like in the global configuration. Note that the function is additive,
+which means any configured notifications in the global configuration will fire as well. 
 
 Once you have the configuration files set up, running `duplicacy-util` is
 simple. Just use a command like:

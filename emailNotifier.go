@@ -21,9 +21,9 @@ var (
 
 // NewEmailNotifier creates a new email notifier. Returns error if
 // no valid email configuration is found
-func NewEmailNotifier() (EmailNotifier, error) {
+func NewEmailNotifier(v *viper.Viper) (EmailNotifier, error) {
 	// Only support new email configuration in v1.6+
-	useNewConfigStyle()
+	useNewConfigStyle(v)
 
 	var notifier EmailNotifier
 
@@ -74,17 +74,17 @@ func (EmailNotifier) email(subject string, bodyHTML []string, bodyText []string)
 	return nil
 }
 
-func useNewConfigStyle() {
-	emailFromAddress = viper.GetString("email.fromAddress")
-	emailToAddress = viper.GetString("email.toAddress")
-	emailServerHostname = viper.GetString("email.serverHostname")
-	emailServerPort = viper.GetInt("email.serverPort")
-	emailAuthUsername = viper.GetString("email.authUsername")
+func useNewConfigStyle(v *viper.Viper) {
+	emailFromAddress = v.GetString("email.fromAddress")
+	emailToAddress = v.GetString("email.toAddress")
+	emailServerHostname = v.GetString("email.serverHostname")
+	emailServerPort = v.GetInt("email.serverPort")
+	emailAuthUsername = v.GetString("email.authUsername")
 
 	// Allow environment variable DU_EMAIL_AUTH_PASSWORD to override authPassword in configuration
 	if emailAuthPassword = os.Getenv("DU_EMAIL_AUTH_PASSWORD"); emailAuthPassword == "" {
-		emailAuthPassword = viper.GetString("email.authPassword")
+		emailAuthPassword = v.GetString("email.authPassword")
 	}
 
-	emailAcceptAnyCerts = viper.GetBool("email.acceptInsecureCerts")
+	emailAcceptAnyCerts = v.GetBool("email.acceptInsecureCerts")
 }

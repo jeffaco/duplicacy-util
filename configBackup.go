@@ -142,64 +142,96 @@ func (config *configurationFile) loadConfig(verboseFlag bool, debugFlag bool) er
 			}
 		}
 	}
-
-	// Generate verbose/debug output if requested (assuming no fatal errors)
-
-	if err == nil {
-		logMessage(nil, fmt.Sprint("Using config file:   ", v.ConfigFileUsed()))
-
-		if verboseFlag {
-			logMessage(nil, "")
-			logMessage(nil, "Backup Information:")
-			logMessage(nil, fmt.Sprintf("  Num\t%-20s%s", "Storage", "Threads"))
-			for i := range config.backupInfo {
-				var localThreads string
-				if _, ok := config.backupInfo[i]["threads"]; ok {
-					localThreads = config.backupInfo[i]["threads"]
-				}
-				logMessage(nil, fmt.Sprintf("  %2d\t%-20s   %-2s", i+1, config.backupInfo[i]["name"], localThreads))
-			}
-			if len(config.copyInfo) != 0 {
-				logMessage(nil, "Copy Information:")
-				logMessage(nil, fmt.Sprintf("  Num\t%-20s%-20s%s", "From", "To", "Threads"))
-				for i := range config.copyInfo {
-					var localThreads string
-					if _, ok := config.copyInfo[i]["threads"]; ok {
-						localThreads = config.copyInfo[i]["threads"]
-					}
-					logMessage(nil, fmt.Sprintf("  %2d\t%-20s%-20s   %-2s", i+1, config.copyInfo[i]["from"], config.copyInfo[i]["to"], localThreads))
-				}
-			}
-			logMessage(nil, "")
-
-			logMessage(nil, "Prune Information:")
-			for i := range config.pruneInfo {
-				logMessage(nil, fmt.Sprintf("  %2d: Storage %s\n      Keep: %s", i+1, config.pruneInfo[i]["storage"], config.pruneInfo[i]["keep"]))
-			}
-			logMessage(nil, "")
-
-			logMessage(nil, "Check Information:")
-			logMessage(nil, fmt.Sprintf("  Num\t%-20s%s", "Storage", "All Snapshots"))
-			for i := range config.checkInfo {
-				var checkAll string
-				if _, ok := config.checkInfo[i]["all"]; ok {
-					checkAll = "true"
-				}
-				logMessage(nil, fmt.Sprintf("  %2d\t%-20s    %-2s", i+1, config.checkInfo[i]["storage"], checkAll))
-			}
-			logMessage(nil, "")
-		}
-
-		if debugFlag {
-			logMessage(nil, "")
-			logMessage(nil, fmt.Sprint("Backup Info: ", config.backupInfo))
-			logMessage(nil, fmt.Sprint("Copy Info: ", config.copyInfo))
-			logMessage(nil, fmt.Sprint("Prune Info: ", config.pruneInfo))
-			logMessage(nil, fmt.Sprint("Check Info", config.checkInfo))
-		}
+	if err != nil {
+		return err
+	}
+	channels := new(notificationChannels)
+	if err := v.UnmarshalKey("notifications", &channels); err != nil {
+		return err
 	}
 
-	return err
+	// Load configuration notifications
+	// Configure notifiers for onStart notification
+	backupOnStartNotifiers, err := configureNotificationChannel(v, channels.OnStart, OnStart)
+	if err != nil {
+		return err
+	}
+	// Configure notifiers for onSkip notification
+	backupOnSkipNotifiers, err := configureNotificationChannel(v, channels.OnSkip, OnSkipped)
+	if err != nil {
+		return err
+	}
+
+	// Configure notifiers for onSuccess notification
+	backupOnSuccessNotifiers, err := configureNotificationChannel(v, channels.OnSuccess, OnSuccess)
+	if err != nil {
+		return err
+	}
+
+	// Configure notifiers for onFailure notification
+	backupOnFailureNotifiers, err := configureNotificationChannel(v, channels.OnFailure, OnFailure)
+	if err != nil {
+		return err
+	}
+	onStartNotifiers = append(onStartNotifiers, backupOnStartNotifiers...)
+	onSkipNotifiers = append(onSkipNotifiers, backupOnSkipNotifiers...)
+	onSuccessNotifiers = append(onSuccessNotifiers, backupOnSuccessNotifiers...)
+	onFailureNotifiers = append(onFailureNotifiers, backupOnFailureNotifiers...)
+	// Generate verbose/debug output if requested (assuming no fatal errors)
+
+	logMessage(nil, fmt.Sprint("Using config file:   ", v.ConfigFileUsed()))
+
+	if verboseFlag {
+		logMessage(nil, "")
+		logMessage(nil, "Backup Information:")
+		logMessage(nil, fmt.Sprintf("  Num\t%-20s%s", "Storage", "Threads"))
+		for i := range config.backupInfo {
+			var localThreads string
+			if _, ok := config.backupInfo[i]["threads"]; ok {
+				localThreads = config.backupInfo[i]["threads"]
+			}
+			logMessage(nil, fmt.Sprintf("  %2d\t%-20s   %-2s", i+1, config.backupInfo[i]["name"], localThreads))
+		}
+		if len(config.copyInfo) != 0 {
+			logMessage(nil, "Copy Information:")
+			logMessage(nil, fmt.Sprintf("  Num\t%-20s%-20s%s", "From", "To", "Threads"))
+			for i := range config.copyInfo {
+				var localThreads string
+				if _, ok := config.copyInfo[i]["threads"]; ok {
+					localThreads = config.copyInfo[i]["threads"]
+				}
+				logMessage(nil, fmt.Sprintf("  %2d\t%-20s%-20s   %-2s", i+1, config.copyInfo[i]["from"], config.copyInfo[i]["to"], localThreads))
+			}
+		}
+		logMessage(nil, "")
+
+		logMessage(nil, "Prune Information:")
+		for i := range config.pruneInfo {
+			logMessage(nil, fmt.Sprintf("  %2d: Storage %s\n      Keep: %s", i+1, config.pruneInfo[i]["storage"], config.pruneInfo[i]["keep"]))
+		}
+		logMessage(nil, "")
+
+		logMessage(nil, "Check Information:")
+		logMessage(nil, fmt.Sprintf("  Num\t%-20s%s", "Storage", "All Snapshots"))
+		for i := range config.checkInfo {
+			var checkAll string
+			if _, ok := config.checkInfo[i]["all"]; ok {
+				checkAll = "true"
+			}
+			logMessage(nil, fmt.Sprintf("  %2d\t%-20s    %-2s", i+1, config.checkInfo[i]["storage"], checkAll))
+		}
+		logMessage(nil, "")
+	}
+
+	if debugFlag {
+		logMessage(nil, "")
+		logMessage(nil, fmt.Sprint("Backup Info: ", config.backupInfo))
+		logMessage(nil, fmt.Sprint("Copy Info: ", config.copyInfo))
+		logMessage(nil, fmt.Sprint("Prune Info: ", config.pruneInfo))
+		logMessage(nil, fmt.Sprint("Check Info", config.checkInfo))
+	}
+
+	return nil
 }
 
 func readSection(viper *viper.Viper, filename string, sectionKey string) []map[string]string {
